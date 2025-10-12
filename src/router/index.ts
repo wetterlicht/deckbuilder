@@ -1,8 +1,44 @@
+import CollectionTab from '@/components/CollectionTab.vue'
+import DecksTab from '@/components/DecksTab.vue'
+import DecksView from '@/components/DecksView.vue'
+import DeckView from '@/components/DeckView.vue'
+import SearchTab from '@/components/SearchTab.vue'
+import { useTabStore } from '@/stores/tabs'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
+  routes: [
+    { path: '/', redirect: { name: 'collection' } },
+    { path: '/collection', component: CollectionTab, name: 'collection' },
+    {
+      path: '/decks',
+      component: DecksTab,
+      children: [
+        {
+          path: '',
+          name: 'decks',
+          component: DecksView,
+        },
+        {
+          path: ':id',
+          name: 'deck',
+          component: DeckView,
+        },
+      ]
+    },
+    { path: '/search', component: SearchTab, name: 'search' },
+  ],
+})
+
+router.beforeEach((to, from, next) => {
+  const tabStore = useTabStore()
+  const fromRoot = '/' + from.path.split('/')[1]
+  if (fromRoot && from.path !== '/') {
+    tabStore.updateTab(fromRoot, from.fullPath)
+  }
+  console.log(tabStore.lastVisited)
+  next()
 })
 
 export default router

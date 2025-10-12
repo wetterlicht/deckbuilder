@@ -8,11 +8,20 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    // vueDevTools(),
   ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
+    },
+  },
+  server: {
+    proxy: {
+      '/lorcana-api': {
+        target: 'https://lorcanajson.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/lorcana-api/, ''),
+      },
     },
   },
 })

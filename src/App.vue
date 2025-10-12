@@ -1,11 +1,20 @@
-<script setup lang="ts"></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <Suspense>
+    <template #default>
+      <MainApp />
+    </template>
+    <template #fallback>
+      <LoadingScreen />
+    </template>
+  </Suspense>
 </template>
+
+<script setup lang="ts">
+import "./styles/reset.css";
+import "./styles/global.css";
+import MainApp from "./components/MainApp.vue";
+import LoadingScreen from "./components/LoadingScreen.vue";
+</script>
+
 
 <style scoped></style>

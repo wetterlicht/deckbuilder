@@ -1,0 +1,11 @@
+html {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    --c-indigo: rgb(55, 59, 112);
+    --c-gold: rgb(211, 186, 132);
+    --c-parchment: rgb(227, 202, 168);
+    --c-kelp: rgb(28, 28, 26);
+
+    --c-gold-light: rgb(255, 239, 204);
+    --c-gold-dark: rgb(96, 87, 66);
+}
