@@ -22,6 +22,7 @@
     grid-template-columns: auto 1fr auto;
     align-items: center;
     position: relative;
+    min-height: 3.5rem;
 }
 
 h1 {

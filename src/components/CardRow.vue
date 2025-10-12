@@ -13,10 +13,14 @@
         </div>
         <div class="card-row__quantity">
             <template v-if="card.quantity > 0">
-                <button @click="store.removeCardFromCurrentDeck(card.data.id)">-</button>
+                <button @click="store.removeCardFromCurrentDeck(card.data.id)">
+                    <div class="icon-remove"></div>
+                </button>
                 <div>{{ card.quantity }}</div>
             </template>
-            <button @click="store.addCardToCurrentDeck(card.data.id)">+</button>
+            <button @click="store.addCardToCurrentDeck(card.data.id)">
+                <div class="icon-add"></div>
+            </button>
         </div>
     </li>
 </template>
@@ -158,6 +162,30 @@ const store = useMainStore();
         color: white;
         background: transparent;
         border: none;
+        display: grid;
+        justify-content: center;
+        align-items: center;
     }
+}
+
+.icon-add {
+    height: 1.5rem;
+    width: 1.5rem;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-image: url('/images/add.svg');
+    mask-size: cover;
+    mask-position: center;
+}
+
+.icon-remove {
+    height: 1.5rem;
+    width: 1.5rem;
+    color: white;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-image: url('/images/remove.svg');
+    mask-size: cover;
+    mask-position: center;
 }
 </style>

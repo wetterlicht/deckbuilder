@@ -6,10 +6,16 @@
         </ul>
         <div class="menu">
             <div v-if="isMenuOpen" class="menu-items">
-                <div class="menu-item"><span>Import Deck</span><button></button></div>
-                <div class="menu-item" @click="showNewDeckDialog"><span>New Deck</span><button></button></div>
+                <div class="menu-item"><span>Import Deck</span><button>
+                        <div class="import-icon"></div>
+                    </button></div>
+                <div class="menu-item" @click="showNewDeckDialog"><span>New Deck</span><button>
+                        <div class="add-icon"></div>
+                    </button></div>
             </div>
-            <button class="toggle" @click="toggleMenu"></button>
+            <button class="toggle" @click="toggleMenu">
+                <div class="toggle__icon" :class="{ 'toggle__icon--close': isMenuOpen }"></div>
+            </button>
         </div>
 
         <dialog ref="newDeckDialog" class="new-deck-dialog">
@@ -83,6 +89,46 @@ function addNewDeck() {
     border: none;
     width: 4rem;
     aspect-ratio: 1;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+
+    .toggle__icon {
+        color: var(--c-tab-icon);
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: currentColor;
+        mask-repeat: no-repeat;
+        mask-image: url('/images/menu.svg');
+        mask-size: cover;
+        mask-position: center;
+
+        &.toggle__icon--close {
+            mask-image: url('/images/close.svg');
+        }
+    }
+}
+
+.import-icon {
+    color: var(--c-tab-icon);
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-image: url('/images/import.svg');
+    mask-size: cover;
+    mask-position: center;
+}
+
+.add-icon {
+    color: var(--c-tab-icon);
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-image: url('/images/add.svg');
+    mask-size: cover;
+    mask-position: center;
 }
 
 .menu-items {
@@ -111,6 +157,10 @@ function addNewDeck() {
         aspect-ratio: 1;
         background-color: var(--c-gold-dark);
         border: none;
+        display: grid;
+        justify-content: center;
+        align-items: center;
+        color: var(--c-gold);
     }
 }
 

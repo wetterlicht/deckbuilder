@@ -2,8 +2,8 @@
     <nav class="navigation-bar">
         <ul>
             <li v-for="tab in tabs">
-                <button class="tab" @click="onTabClick(tab.path)">
-                    <div class=" tab__icon">
+                <button class="tab" :class="getTabClass(tab.path)" @click="onTabClick(tab.path)">
+                    <div class=" tab__icon" :style="getIconStyle(tab.icon)">
                     </div>
                     <div class="tab__name">
                         {{ tab.name }}
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 import { useTabStore } from '@/stores/tabs';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -39,6 +40,20 @@ const tabs = [
         path: '/search'
     },
 ];
+
+function getTabClass(path: string) {
+    const root = "/" + route.path.split('/')[1];
+    return {
+        'tab--active': root && path.startsWith(root)
+    }
+}
+
+function getIconStyle(iconName: string) {
+    const url = `/images/${iconName}.svg`
+    return {
+        maskImage: `url(${url})`,
+    }
+}
 
 function onTabClick(tabPath: string) {
     const currentRoot = '/' + route.path.split('/')[1];
@@ -83,15 +98,19 @@ function onTabClick(tabPath: string) {
     --c-tab-icon: hsl(0, 0%, 50%);
     color: var(--c-tab-text);
 
-    &.router-link-active {
+    &.tab--active {
         --c-tab-color: hsl(0, 0%, 100%);
         --c-tab-icon: hsl(0, 0%, 100%);
     }
 }
 
 .tab__icon {
-    background-color: var(--c-tab-icon);
+    color: var(--c-tab-icon);
     width: 1.5rem;
     height: 1.5rem;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-size: cover;
+    mask-position: center;
 }
 </style>

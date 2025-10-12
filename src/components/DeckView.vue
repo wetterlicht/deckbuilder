@@ -15,7 +15,7 @@
         </PageHeader>
         <div class="search">
             <input id="search" type="text" placeholder="Add cards" v-model="store.searchTerm">
-            <button class="search__clear" @click="clearSearchTerm"></button>
+            <button class="search__clear" v-if="store.searchTerm" @click="clearSearchTerm"></button>
         </div>
         <ul class="cards" v-if="store.isSearching" @scroll="onScroll">
             <CardRow v-for="card in filteredCardsWithQuantities" :card="card">
@@ -111,6 +111,14 @@ watch(() => store.searchTerm, () => {
     right: 1.5rem;
     top: 50%;
     translate: 0 -50%;
+    color: white;
+
+
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-image: url('/images/close.svg');
+    mask-size: cover;
+    mask-position: center;
 }
 
 .title {

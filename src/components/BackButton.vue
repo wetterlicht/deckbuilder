@@ -1,6 +1,5 @@
 <template>
     <RouterLink class="back-button" :to="to">
-
     </RouterLink>
 </template>
 
@@ -18,9 +17,14 @@ defineProps({
 
 <style scoped>
 .back-button {
-    background-color: white;
+    border: none;
+    color: white;
     width: 1.5rem;
     height: 1.5rem;
-    border: none;
+    background-color: currentColor;
+    mask-image: url("/images/back.svg");
+    mask-repeat: no-repeat;
+    mask-size: cover;
+    mask-position: center;
 }
 </style>
