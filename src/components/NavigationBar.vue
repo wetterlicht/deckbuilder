@@ -72,6 +72,7 @@ function onTabClick(tabPath: string) {
     background-color: #000;
     height: 3.5rem;
     font-size: 0.75rem;
+    z-index: 100;
 }
 
 .navigation-bar ul {

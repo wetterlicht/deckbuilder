@@ -17,14 +17,8 @@
             <input id="search" type="text" placeholder="Add cards" v-model="store.searchTerm">
             <button class="search__clear" v-if="store.searchTerm" @click="clearSearchTerm"></button>
         </div>
-        <ul class="cards" v-if="store.isSearching" @scroll="onScroll">
-            <CardRow v-for="card in filteredCardsWithQuantities" :card="card">
-            </CardRow>
-        </ul>
-        <ul class="cards" v-else>
-            <CardRow v-for="card in deck.cards" :card="card">
-            </CardRow>
-        </ul>
+        <CardList v-if="store.isSearching" :cards="store.filteredCards"></CardList>
+        <CardList v-else :cards="deck.cards.map(entry => entry.data)"></CardList>
     </div>
 </template>
 
@@ -32,10 +26,10 @@
 import { useMainStore } from '@/stores/main';
 
 import { useRoute } from 'vue-router';
-import CardRow from './CardRow.vue';
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import BackButton from './BackButton.vue';
 import PageHeader from './PageHeader.vue';
+import CardList from './CardList.vue';
 
 const store = useMainStore();
 
@@ -45,38 +39,9 @@ store.setCurrentDeck(id);
 
 const deck = computed(() => store.currentDeckWithCards)
 
-
-const VISIBLE_STEP = 50;
-const visibleCount = ref(VISIBLE_STEP);
-
 function clearSearchTerm() {
     store.searchTerm = ''
 }
-
-const filteredCardsWithQuantities = computed(() => {
-    return store.filteredCards.slice(0, visibleCount.value).map(card => {
-        const quantity = deck.value?.cards.find(cardInDeck => card.id === cardInDeck.id)?.quantity ?? 0;
-        return {
-            quantity,
-            data: card,
-        };
-    });
-});
-
-function onScroll(event: Event) {
-    const target = event.target as HTMLElement;
-    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
-        // Near bottom, load more
-        if (visibleCount.value < store.filteredCards.length) {
-            visibleCount.value += VISIBLE_STEP;
-        }
-    }
-}
-
-// Reset visibleCount when search term changes (new search)
-watch(() => store.searchTerm, () => {
-    visibleCount.value = VISIBLE_STEP;
-});
 
 </script>
 
@@ -137,9 +102,102 @@ watch(() => store.searchTerm, () => {
     }
 }
 
-.cards {
-    flex-grow: 1;
-    overflow: auto;
-    padding-block: 0.125rem;
+.card-details-dialog {
+    width: 100vw;
+    height: calc(100vh - 3.5rem);
+    margin: 0;
+    max-width: unset;
+    max-height: unset;
+    border: none;
+    outline: none;
+    background-color: var(--c-kelp);
+    padding: 0;
+
+    &::backdrop {
+        width: 100vw;
+        height: calc(100vh - 3.5rem);
+        margin: 0;
+        max-width: unset;
+        max-height: unset;
+    }
+
+    .close-button {
+        z-index: 1;
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+
+        display: grid;
+        justify-content: center;
+        align-items: center;
+        padding: 0.25rem;
+        border-radius: 100vh;
+        border: 2px solid white;
+        background-color: transparent;
+
+        .close-button__icon {
+            width: 1.5rem;
+            aspect-ratio: 1;
+            color: white;
+            background-color: currentColor;
+            mask-repeat: no-repeat;
+            mask-image: url('/images/close.svg');
+            mask-size: cover;
+            mask-position: center;
+        }
+
+    }
+}
+
+.card-carousel {
+    position: relative;
+    width: 100vw;
+    height: 100%;
+    display: grid;
+    grid-auto-flow: column;
+    padding-block: 1rem;
+    padding-inline: 10vw;
+    column-gap: 10vw;
+
+    overflow: auto hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+
+
+    &::scroll-button(left) {
+        position: absolute;
+        left: 0rem;
+        top: 15.25rem;
+        content: '';
+        height: 2.5rem;
+        width: 2.5rem;
+        color: white;
+        background-color: currentColor;
+        mask-repeat: no-repeat;
+        mask-image: url('/images/chevron_back.svg');
+        mask-size: cover;
+        mask-position: center;
+    }
+
+    &::scroll-button(right) {
+        position: absolute;
+        right: 0rem;
+
+        top: 15.25rem;
+        content: '';
+        height: 2.5rem;
+        width: 2.5rem;
+        color: white;
+        background-color: currentColor;
+        mask-repeat: no-repeat;
+        mask-image: url('/images/chevron_forward.svg');
+        mask-size: cover;
+        mask-position: center;
+    }
+
+
+    &::scroll-button(*):disabled {
+        display: none;
+    }
 }
 </style>

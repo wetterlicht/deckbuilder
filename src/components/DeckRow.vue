@@ -1,7 +1,7 @@
 <template>
     <li class="deck-row">
         <RouterLink :to="to">
-            <div class="colors">
+            <div class="inks">
                 <img v-for="ink in deck.inks" :src="`/images/${ink.toLowerCase()}.svg`" :alt="ink">
             </div>
             <div class="name">{{ deck.name }}</div>

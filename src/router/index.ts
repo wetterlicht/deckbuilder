@@ -37,7 +37,6 @@ router.beforeEach((to, from, next) => {
   if (fromRoot && from.path !== '/') {
     tabStore.updateTab(fromRoot, from.fullPath)
   }
-  console.log(tabStore.lastVisited)
   next()
 })
 

@@ -1,6 +1,6 @@
 import { computed, ref, watch, type ComputedRef, type Ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
-import type { AppData, CardData, DeckData, DeckDataWithCards, SetData } from '@/types';
+import type { AppData, CardData, DeckData, DeckDataWithCards, Filter, SetData } from '@/types';
 import { v4 } from "uuid"
 
 const DB_NAME = 'lorcana-deckbuilder';
@@ -105,15 +105,83 @@ export const useMainStore = defineStore('main', () => {
   }
 
   const searchTerm = ref('')
+  const filters = ref<Filter[]>([]);
 
-  const filteredCards: ComputedRef<Array<CardData>> = computed(() => {
+  const uniqueCards = computed(() => {
+    const map = new Map<string, CardData>();
+
+    for (const card of cards.value) {
+      const name = card.fullName;
+
+      if (!map.has(name)) {
+        map.set(name, card);
+      }
+
+      if (card.isPrimaryVersion) {
+        map.set(name, card);
+      }
+    }
+
+    return Array.from(map.values());
+  })
+
+  const filteredCards = computed(() => {
     const term = searchTerm.value.toLowerCase();
-    const result = cards.value.filter(card => card.fullName.toLowerCase().includes(term));
-    return result.sort((a, b) => a.fullName.localeCompare(b.fullName));
+
+    return uniqueCards.value
+      .filter(card => {
+        if (term && !card.fullName.toLowerCase().includes(term)) {
+          return false;
+        }
+
+        for (const filter of filters.value) {
+          switch (filter.filterType) {
+            case 'array': {
+              const cardValues = card[filter.stat] as string[] || [];
+
+              if (filter.operator === 'AND') {
+                if (!filter.values.every(val => cardValues.includes(val))) {
+                  return false;
+                }
+              } else if (filter.operator === 'OR') {
+                if (!filter.values.some(val => cardValues.includes(val))) {
+                  return false;
+                }
+              }
+              break;
+            }
+            case 'number': {
+              const cardNumber = card[filter.stat] as number;
+
+              console.log(cardNumber, filter.number);
+
+              if (cardNumber === undefined) {
+                return false;
+              }
+              if (filter.operator === '<' && !(cardNumber < filter.number)) { return false; }
+              if (filter.operator === '=' && !(cardNumber === filter.number)) { return false; }
+              if (filter.operator === '>' && !(cardNumber > filter.number)) { return false; }
+
+              break;
+            }
+            case 'text': {
+              const textValue = (card[filter.stat] as string || '').toLowerCase();
+              if (!textValue.includes(filter.text.toLowerCase())) return false;
+              break;
+            }
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => a.fullName.localeCompare(b.fullName));
   });
 
   const isSearching = computed(() => {
-    return searchTerm.value ? true : false
+    if (searchTerm.value) {
+      return true;
+    }
+    return filters.value.length > 0;
   })
 
   const currentDeckId: Ref<string | undefined> = ref();
@@ -164,6 +232,10 @@ export const useMainStore = defineStore('main', () => {
   }
 
 
+  function getDeckQuantity(cardId: string) {
+    return currentDeck.value?.cards.find(card => card.id === cardId)?.quantity ?? 0;
+  }
+
   return {
     loadData,
     decksWithCards,
@@ -175,7 +247,8 @@ export const useMainStore = defineStore('main', () => {
     filteredCards,
     setCurrentDeck,
     addCardToCurrentDeck,
-    removeCardFromCurrentDeck
+    removeCardFromCurrentDeck,
+    getDeckQuantity
   }
 })
 
@@ -188,12 +261,22 @@ function adaptApiData(apiData: any): AppData {
       fullName: apiCardData.fullName,
       inks: apiCardData.colors ? apiCardData.colors : [apiCardData.color],
       cost: apiCardData.cost,
+      lore: apiCardData.lore,
+      strength: apiCardData.strength,
+      willpower: apiCardData.willpower,
+      movement: apiCardData.movement,
       inkwell: apiCardData.inkwell,
       types: [apiCardData.type],
+      rarity: apiCardData.rarity,
+      classifications: apiCardData.classifications,
+      story: apiCardData.story,
+      gameplayText: apiCardData.fullText,
+      flavorText: apiCardData.flavorText,
       images: {
         full: apiCardData.images.full,
         small: apiCardData.images.thumbnail
-      }
+      },
+      isPrimaryVersion: apiCardData.baseId == undefined && apiCardData.reprintOfId == undefined
     }
     return card;
   })

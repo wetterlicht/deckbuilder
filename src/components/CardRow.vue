@@ -1,24 +1,25 @@
 <template>
     <li class="card-row">
-        <div class="card-row__image" :class="imageClass"><img :src="image" :alt="card.data.fullName"></img>
+        <div class="card-row__image" :class="imageClass"><img :src="image" :alt="card.fullName"
+                @click="emit('selected')"></img>
         </div>
-        <div class="card-row__info">
-            <div class="card-row__name">{{ card.data.fullName }}</div>
+        <div class="card-row__info" @click="emit('selected')">
+            <div class=" card-row__name">{{ card.fullName }}</div>
             <div class="card-row__cost">
-                <div class="cost" :class="costIconClass">{{ card.data.cost }}</div>
-                <div class="colors">
-                    <img v-for="color in card.data.inks" :src="`/images/${color.toLowerCase()}.svg`" :alt="color">
+                <div class="cost" :class="costIconClass">{{ card.cost }}</div>
+                <div class="inks">
+                    <img v-for="ink in card.inks" :src="`/images/${ink.toLowerCase()}.svg`" :alt="ink">
                 </div>
             </div>
         </div>
         <div class="card-row__quantity">
-            <template v-if="card.quantity > 0">
-                <button @click="store.removeCardFromCurrentDeck(card.data.id)">
+            <template v-if="quantity > 0">
+                <button @click="store.removeCardFromCurrentDeck(card.id)">
                     <div class="icon-remove"></div>
                 </button>
-                <div>{{ card.quantity }}</div>
+                <div>{{ quantity }}</div>
             </template>
-            <button @click="store.addCardToCurrentDeck(card.data.id)">
+            <button @click="store.addCardToCurrentDeck(card.id)">
                 <div class="icon-add"></div>
             </button>
         </div>
@@ -32,32 +33,35 @@ import { computed, type PropType } from 'vue';
 
 const props = defineProps({
     card: {
-        type: Object as PropType<{
-            quantity: number,
-            data: CardData
-        }>,
+        type: Object as PropType<CardData>,
+        required: true
+    },
+    quantity: {
+        type: Number,
         required: true
     }
 })
 
+const emit = defineEmits(['selected']);
+
 const image = computed(() => {
-    if (props.card.data.types.includes("Location")) {
-        return props.card.data.images.small
+    if (props.card.types.includes("Location")) {
+        return props.card.images.small
     }
-    return props.card.data.images.small
+    return props.card.images.small
 });
 
 const imageClass = computed(() => {
     return {
-        'card-row__image--location': props.card.data.types.includes("Location"),
-        'card-row__image--item': props.card.data.types.includes("Item")
+        'card-row__image--location': props.card.types.includes("Location"),
+        'card-row__image--item': props.card.types.includes("Item")
     }
 })
 
 const costIconClass = computed(() => {
     return {
-        'inkable': props.card.data.inkwell,
-        'uninkable': !props.card.data.inkwell
+        'inkable': props.card.inkwell,
+        'uninkable': !props.card.inkwell
     }
 })
 
@@ -67,14 +71,14 @@ const store = useMainStore();
 <style scoped>
 .card-row {
     color: white;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+    display: flex;
     align-items: center;
     padding-inline: 0.5rem;
     padding-block: 0.25rem;
 }
 
 .card-row__info {
+    flex-grow: 1;
     margin-left: 1rem;
     display: grid;
     row-gap: 0.25rem;
@@ -90,7 +94,7 @@ const store = useMainStore();
     font-size: 1.25rem;
     width: 3.75em;
     height: 3.375em;
-
+    flex-shrink: 0;
     overflow: hidden;
     border-radius: 0.25rem;
 
@@ -147,12 +151,16 @@ const store = useMainStore();
     background-image: url("/images/inkcost.svg");
 }
 
+.inks {
+    display: flex;
+}
+
 .card-row__quantity {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     column-gap: 0.5rem;
-    min-width: 6.25rem;
+    min-width: 90px;
 
     button {
         font-size: 1.75rem;
