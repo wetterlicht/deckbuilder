@@ -9,3 +9,20 @@ html {
     --c-gold-light: rgb(255, 239, 204);
     --c-gold-dark: rgb(96, 87, 66);
 }
+
+.slide-up-down-enter-active,
+.slide-up-down-leave-active {
+    transition: transform 0.4s ease;
+}
+
+.slide-up-down-enter-from,
+.slide-up-down-leave-to {
+    transform: translateY(100%);
+
+}
+
+.slide-up-down-enter-to,
+.slide-up-down-leave-from {
+    transform: translateY(0%);
+
+}

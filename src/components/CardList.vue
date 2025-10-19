@@ -1,14 +1,16 @@
 <template>
-    <ul class="card-list" @scroll="onScroll">
-        <CardRow v-for="(entry, index) in cardsWithQuantities" :card="entry.card" :quantity="entry.quantity"
-            @selected="() => showCardCarousel(index)">
-        </CardRow>
-    </ul>
-    <Transition name="slide-up-down">
-        <CardCarousel v-if="isCarouselActive" :cardsWithQuantities="cardsWithQuantities" v-model:index="carouselIndex"
-            @close="hideCardCarousel">
-        </CardCarousel>
-    </Transition>
+    <div class="card-list">
+        <ul @scroll="onScroll">
+            <CardRow v-for="(entry, index) in cardsWithQuantities" :card="entry.card" :quantity="entry.quantity"
+                @selected="() => showCardCarousel(index)">
+            </CardRow>
+        </ul>
+        <Transition name="slide-up-down">
+            <CardCarousel v-if="isCarouselActive" :cardsWithQuantities="cardsWithQuantities"
+                v-model:index="carouselIndex" @close="hideCardCarousel">
+            </CardCarousel>
+        </Transition>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -42,7 +44,9 @@ const cardsWithQuantities = computed(() => {
 })
 
 function onScroll(event: Event) {
+    console.log("onScroll")
     const target = event.target as HTMLElement;
+    console.log(target.scrollHeight - target.scrollTop, target.clientHeight + 100)
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
         if (visibleCount.value < store.filteredCards.length) {
             visibleCount.value += VISIBLE_STEP;
@@ -83,24 +87,12 @@ function hideCardCarousel() {
 <style scoped>
 .card-list {
     flex-grow: 1;
-    overflow: auto;
-    padding-block: 0.125rem;
-}
+    overflow: hidden;
 
-.slide-up-down-enter-active,
-.slide-up-down-leave-active {
-    transition: transform 0.4s ease;
-}
-
-.slide-up-down-enter-from,
-.slide-up-down-leave-to {
-    transform: translateY(100%);
-
-}
-
-.slide-up-down-enter-to,
-.slide-up-down-leave-from {
-    transform: translateY(0%);
-
+    ul {
+        height: 100%;
+        overflow: auto;
+        padding-block: 0.125rem;
+    }
 }
 </style>

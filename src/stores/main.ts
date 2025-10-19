@@ -1,6 +1,7 @@
 import { computed, ref, watch, type ComputedRef, type Ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
-import type { AppData, CardData, DeckData, DeckDataWithCards, Filter, SetData } from '@/types';
+import type { AppData, CardData, DeckData, DeckDataWithCards, FilterGroup, FilterGroupByStat, ListFilterGroup, ListStat, NumberFilterGroup, NumberStat, SetData, Stat, TextFilterGroup, TextStat } from '@/types';
+import { stats } from '@/types';
 import { v4 } from "uuid"
 
 const DB_NAME = 'lorcana-deckbuilder';
@@ -104,8 +105,42 @@ export const useMainStore = defineStore('main', () => {
     return cards.value.find(card => card.id === id);
   }
 
-  const searchTerm = ref('')
-  const filters = ref<Filter[]>([]);
+  function createEmptyFilterGroups() {
+    const result = {} as FilterGroupByStat;
+    for (const [statKey, statType] of Object.entries(stats)) {
+      const defaultCombineWith = 'AND';
+
+      if (statType === 'number') {
+        const stat = statKey as NumberStat;
+        result[stat] = {
+          stat: stat as NumberStat,
+          combineWith: defaultCombineWith,
+          filters: [],
+        };
+      } else if (statType === 'text') {
+        const stat = statKey as TextStat;
+        result[stat] = {
+          stat: stat as TextStat,
+          combineWith: defaultCombineWith,
+          filters: [],
+        };
+      } else if (statType === 'list') {
+        const stat = statKey as ListStat;
+        result[stat] = {
+          stat: stat as ListStat,
+          combineWith: defaultCombineWith,
+          filters: [],
+        };
+      }
+    }
+
+    return result;
+  }
+
+  const searchTerm = ref('');
+  const filterGroups = ref<FilterGroupByStat>(
+    createEmptyFilterGroups()
+  )
 
   const uniqueCards = computed(() => {
     const map = new Map<string, CardData>();
@@ -134,46 +169,48 @@ export const useMainStore = defineStore('main', () => {
           return false;
         }
 
-        for (const filter of filters.value) {
-          switch (filter.filterType) {
-            case 'array': {
-              const cardValues = card[filter.stat] as string[] || [];
+        for (const filterGroup of Object.values(filterGroups.value)) {
+          const statValue = card[filterGroup.stat];
 
-              if (filter.operator === 'AND') {
-                if (!filter.values.every(val => cardValues.includes(val))) {
-                  return false;
-                }
-              } else if (filter.operator === 'OR') {
-                if (!filter.values.some(val => cardValues.includes(val))) {
-                  return false;
+          const results = filterGroup.filters.map(filter => {
+            switch (filter.filterType) {
+              case 'number': {
+                const value = statValue as number;
+                const target = filter.number;
+                switch (filter.operator) {
+                  case '<': return value < target;
+                  case '=': return value === target;
+                  case '>': return value > target;
                 }
               }
-              break;
-            }
-            case 'number': {
-              const cardNumber = card[filter.stat] as number;
 
-              console.log(cardNumber, filter.number);
-
-              if (cardNumber === undefined) {
-                return false;
+              case 'text': {
+                const value = (statValue as string)?.toLowerCase();
+                const text = filter.text.toLowerCase();
+                return filter.operator === 'include'
+                  ? value.includes(text)
+                  : !value.includes(text);
               }
-              if (filter.operator === '<' && !(cardNumber < filter.number)) { return false; }
-              if (filter.operator === '=' && !(cardNumber === filter.number)) { return false; }
-              if (filter.operator === '>' && !(cardNumber > filter.number)) { return false; }
 
-              break;
+              case 'list': {
+                const values = statValue as string[];
+                return filter.operator === 'include'
+                  ? values.includes(filter.value)
+                  : !values.includes(filter.value);
+              }
             }
-            case 'text': {
-              const textValue = (card[filter.stat] as string || '').toLowerCase();
-              if (!textValue.includes(filter.text.toLowerCase())) return false;
-              break;
-            }
-          }
+          });
+
+          const groupPassed = filterGroup.combineWith === 'AND'
+            ? results.every(Boolean)
+            : results.some(Boolean);
+
+          if (!groupPassed) return false;
         }
 
         return true;
-      })
+      }
+      )
       .sort((a, b) => a.fullName.localeCompare(b.fullName));
   });
 
@@ -181,7 +218,7 @@ export const useMainStore = defineStore('main', () => {
     if (searchTerm.value) {
       return true;
     }
-    return filters.value.length > 0;
+    return Object.keys(filterGroups.value).length > 0;
   })
 
   const currentDeckId: Ref<string | undefined> = ref();
@@ -231,9 +268,16 @@ export const useMainStore = defineStore('main', () => {
     return deckData.id;
   }
 
-
   function getDeckQuantity(cardId: string) {
     return currentDeck.value?.cards.find(card => card.id === cardId)?.quantity ?? 0;
+  }
+
+  function setFilterGroups(newGroups: FilterGroupByStat) {
+    filterGroups.value = { ...newGroups };
+  }
+
+  function clearFilterGroups() {
+    filterGroups.value = createEmptyFilterGroups();
   }
 
   return {
@@ -248,7 +292,10 @@ export const useMainStore = defineStore('main', () => {
     setCurrentDeck,
     addCardToCurrentDeck,
     removeCardFromCurrentDeck,
-    getDeckQuantity
+    getDeckQuantity,
+    filterGroups,
+    setFilterGroups,
+    clearFilterGroups
   }
 })
 
@@ -264,7 +311,7 @@ function adaptApiData(apiData: any): AppData {
       lore: apiCardData.lore,
       strength: apiCardData.strength,
       willpower: apiCardData.willpower,
-      movement: apiCardData.movement,
+      moveCost: apiCardData.moveCost,
       inkwell: apiCardData.inkwell,
       types: [apiCardData.type],
       rarity: apiCardData.rarity,
