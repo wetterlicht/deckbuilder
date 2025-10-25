@@ -30,7 +30,7 @@ const store = useMainStore();
     top: 0;
     left: 0;
     width: 100vw;
-    height: calc(100vh - 3.5rem);
+    height: calc(100dvh - 3.5rem);
     background-color: var(--c-kelp);
     color: white;
     display: flex;

@@ -24,7 +24,7 @@ await store.loadData();
 main {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100dvh;
     background-color: var(--c-kelp);
 }
 
