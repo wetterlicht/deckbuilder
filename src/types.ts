@@ -50,8 +50,6 @@ export interface DeckDataWithCards {
     inks: Array<string>
 }
 
-type statType = 'text' | 'number' | 'list';
-
 export const stats = {
     gameplayText: 'text',
     flavorText: 'text',
@@ -60,7 +58,8 @@ export const stats = {
     strength: 'number',
     willpower: 'number',
     moveCost: 'number',
-    inks: 'list',
+    classifications: 'list',
+    story: 'list'
 } as const;
 
 export type NumberStat = {

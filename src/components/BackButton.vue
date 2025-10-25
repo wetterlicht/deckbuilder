@@ -15,16 +15,4 @@ defineProps({
 })
 </script>
 
-<style scoped>
-.back-button {
-    border: none;
-    color: white;
-    width: 1.5rem;
-    height: 1.5rem;
-    background-color: currentColor;
-    mask-image: url("/images/back.svg");
-    mask-repeat: no-repeat;
-    mask-size: cover;
-    mask-position: center;
-}
-</style>
+<style scoped></style>

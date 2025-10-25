@@ -1,10 +1,10 @@
 <template>
     <div class="search-tab">
-        <button @click="showFilters = true">Show filters</button>
+        <!-- <button @click="showFilters = true">Show filters</button>
         <CardList class="card-list" :cards="store.filteredCards"></CardList>
         <Transition name="slide-up-down">
             <Filters v-if="showFilters" @apply="showFilters = false"></Filters>
-        </Transition>
+        </Transition> -->
 
     </div>
 </template>

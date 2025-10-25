@@ -7,7 +7,19 @@ html {
     --c-kelp: rgb(28, 28, 26);
 
     --c-gold-light: rgb(255, 239, 204);
-    --c-gold-dark: rgb(96, 87, 66);
+    --c-gold-dark: hsl(42, 19%, 25%);
+}
+
+.back-button {
+    border: none;
+    color: white;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: currentColor;
+    mask-image: url("/images/back.svg");
+    mask-repeat: no-repeat;
+    mask-size: cover;
+    mask-position: center;
 }
 
 .slide-up-down-enter-active,
@@ -24,5 +36,22 @@ html {
 .slide-up-down-enter-to,
 .slide-up-down-leave-from {
     transform: translateY(0%);
+
+}
+
+.slide-left-right-enter-active,
+.slide-left-right-leave-active {
+    transition: transform 0.4s ease;
+}
+
+.slide-left-right-enter-from,
+.slide-left-right-leave-to {
+    transform: translateX(100%);
+
+}
+
+.slide-left-right-enter-to,
+.slide-left-right-leave-from {
+    transform: translateX(0%);
 
 }

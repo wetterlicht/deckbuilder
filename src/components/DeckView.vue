@@ -13,12 +13,11 @@
                 </div>
             </template>
         </PageHeader>
-        <div class="search">
-            <input id="search" type="text" placeholder="Add cards" v-model="store.searchTerm">
-            <button class="search__clear" v-if="store.searchTerm" @click="clearSearchTerm"></button>
-        </div>
-        <CardList v-if="store.isSearching" :cards="store.filteredCards"></CardList>
-        <CardList v-else :cards="deck.cards.map(entry => entry.data)"></CardList>
+        <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)"></CardList>
+        <button class="deck-view__add-cards" @click="showFilters = true">Add Cards</button>
+        <Transition name="slide-left-right">
+            <Filters v-if="showFilters" @close="showFilters = false"></Filters>
+        </Transition>
     </div>
 </template>
 
@@ -26,10 +25,11 @@
 import { useMainStore } from '@/stores/main';
 
 import { useRoute } from 'vue-router';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import BackButton from './BackButton.vue';
 import PageHeader from './PageHeader.vue';
 import CardList from './CardList.vue';
+import Filters from './Filters.vue';
 
 const store = useMainStore();
 
@@ -39,9 +39,7 @@ store.setCurrentDeck(id);
 
 const deck = computed(() => store.currentDeckWithCards)
 
-function clearSearchTerm() {
-    store.searchTerm = ''
-}
+const showFilters = ref(false);
 
 </script>
 
@@ -53,37 +51,21 @@ function clearSearchTerm() {
     flex-direction: column;
 }
 
-.search {
-    padding-block: 0.5rem;
-    padding-inline: 0.5rem;
-    position: relative;
-
-    input {
-        color: white;
-        width: 100%;
-        border-radius: 100vh;
-        padding-block: 0.5rem;
-        padding-inline: 1rem;
-        background-color: #333;
-        border: none;
-    }
+.deck-view__card-list {
+    padding-bottom: 5.5rem;
 }
 
-.search__clear {
-    position: absolute;
-    aspect-ratio: 1;
-    width: 1.5rem;
-    right: 1.5rem;
-    top: 50%;
-    translate: 0 -50%;
-    color: white;
-
-
-    background-color: currentColor;
-    mask-repeat: no-repeat;
-    mask-image: url('/images/close.svg');
-    mask-size: cover;
-    mask-position: center;
+.deck-view__add-cards {
+    position: fixed;
+    bottom: 5rem;
+    left: 50%;
+    translate: -50%;
+    padding: 0.5rem 0.5rem;
+    border: none;
+    border-radius: 0.125rem;
+    background-color: var(--c-gold-dark);
+    color: var(--c-gold-light);
+    box-shadow: 0 4px 6px 1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
 }
 
 .title {

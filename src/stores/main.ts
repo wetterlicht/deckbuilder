@@ -1,6 +1,6 @@
 import { computed, ref, watch, type ComputedRef, type Ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
-import type { AppData, CardData, DeckData, DeckDataWithCards, FilterGroup, FilterGroupByStat, ListFilterGroup, ListStat, NumberFilterGroup, NumberStat, SetData, Stat, TextFilterGroup, TextStat } from '@/types';
+import type { AppData, CardData, DeckData, DeckDataWithCards, FilterGroupByStat, ListStat, NumberStat, SetData, TextStat } from '@/types';
 import { stats } from '@/types';
 import { v4 } from "uuid"
 
@@ -101,6 +101,46 @@ export const useMainStore = defineStore('main', () => {
     return decksWithCards.value.find(deck => deck.id === currentDeckId.value) as DeckDataWithCards;
   });
 
+  const inks = computed(() => {
+    return ['Amber', 'Amethyst', 'Emerald', 'Ruby', 'Sapphire', 'Steel'];
+  })
+
+  const inkFilter = ref({
+    inks: [] as Array<string>,
+    operator: "<="
+  });
+
+  const rarities = computed(() => {
+    const rarities = ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Legendary', 'Epic', 'Enchanted', 'Iconic']
+    return rarities.filter(rarity => uniqueCards.value.some(card => card.rarity === rarity))
+  })
+
+  const rarityFilter = ref({
+    rarities: [] as Array<string>,
+  });
+
+  const classifications = computed(() => {
+    const set = new Set<string>();
+    uniqueCards.value.forEach(card => {
+      card.classifications?.forEach(classification => {
+        set.add(classification)
+      })
+    })
+
+    return Array.from(set).sort();
+  })
+
+  const stories = computed(() => {
+    const set = new Set<string>();
+    cards.value.forEach(card => {
+      if (card.story) {
+        set.add(card.story)
+      }
+    })
+
+    return Array.from(set).sort();
+  })
+
   function getCardById(id: string): CardData | undefined {
     return cards.value.find(card => card.id === id);
   }
@@ -108,27 +148,25 @@ export const useMainStore = defineStore('main', () => {
   function createEmptyFilterGroups() {
     const result = {} as FilterGroupByStat;
     for (const [statKey, statType] of Object.entries(stats)) {
-      const defaultCombineWith = 'AND';
-
       if (statType === 'number') {
         const stat = statKey as NumberStat;
         result[stat] = {
           stat: stat as NumberStat,
-          combineWith: defaultCombineWith,
+          combineWith: 'OR',
           filters: [],
         };
       } else if (statType === 'text') {
         const stat = statKey as TextStat;
         result[stat] = {
           stat: stat as TextStat,
-          combineWith: defaultCombineWith,
+          combineWith: 'AND',
           filters: [],
         };
       } else if (statType === 'list') {
         const stat = statKey as ListStat;
         result[stat] = {
           stat: stat as ListStat,
-          combineWith: defaultCombineWith,
+          combineWith: 'OR',
           filters: [],
         };
       }
@@ -146,7 +184,7 @@ export const useMainStore = defineStore('main', () => {
     const map = new Map<string, CardData>();
 
     for (const card of cards.value) {
-      const name = card.fullName;
+      const name = card.fullName.toLowerCase();
 
       if (!map.has(name)) {
         map.set(name, card);
@@ -169,7 +207,37 @@ export const useMainStore = defineStore('main', () => {
           return false;
         }
 
+        if (inkFilter.value.inks.length > 0) {
+          switch (inkFilter.value.operator) {
+            case '<=':
+              if (card.inks.some(ink => !inkFilter.value.inks.includes(ink))) {
+                return false;
+              }
+              break;
+            case '>=':
+              if (!inkFilter.value.inks.every(ink => card.inks.includes(ink))) {
+                return false;
+              }
+              break;
+            case '=':
+              if (!card.inks.every(ink => inkFilter.value.inks.includes(ink)) || card.inks.length !== inkFilter.value.inks.length) {
+                return false
+              }
+              break;
+          }
+        }
+
+        if (rarityFilter.value.rarities.length > 0 &&
+          !rarityFilter.value.rarities.includes(card.rarity)
+        ) {
+          return false;
+        }
+
         for (const filterGroup of Object.values(filterGroups.value)) {
+          if (filterGroup.filters.length === 0) {
+            continue;
+          }
+
           const statValue = card[filterGroup.stat];
 
           const results = filterGroup.filters.map(filter => {
@@ -185,7 +253,7 @@ export const useMainStore = defineStore('main', () => {
               }
 
               case 'text': {
-                const value = (statValue as string)?.toLowerCase();
+                const value = (statValue as string ?? "").toLowerCase();
                 const text = filter.text.toLowerCase();
                 return filter.operator === 'include'
                   ? value.includes(text)
@@ -193,10 +261,11 @@ export const useMainStore = defineStore('main', () => {
               }
 
               case 'list': {
-                const values = statValue as string[];
+                let values = ((Array.isArray(statValue) ? statValue : [statValue]) ?? []) as Array<string>;
+                values = values.map(value => value.toLowerCase());
                 return filter.operator === 'include'
-                  ? values.includes(filter.value)
-                  : !values.includes(filter.value);
+                  ? values.includes(filter.value.toLowerCase())
+                  : !values.includes(filter.value.toLowerCase());
               }
             }
           });
@@ -218,7 +287,9 @@ export const useMainStore = defineStore('main', () => {
     if (searchTerm.value) {
       return true;
     }
-    return Object.keys(filterGroups.value).length > 0;
+    return Object.values(filterGroups.value).reduce((acc, cur) => {
+      return acc + cur.filters.length;
+    }, 0) > 0;
   })
 
   const currentDeckId: Ref<string | undefined> = ref();
@@ -276,7 +347,11 @@ export const useMainStore = defineStore('main', () => {
     filterGroups.value = { ...newGroups };
   }
 
-  function clearFilterGroups() {
+  function clearFilters() {
+    searchTerm.value = '';
+    inkFilter.value.inks = [];
+    inkFilter.value.operator = "<=";
+    rarityFilter.value.rarities = [];
     filterGroups.value = createEmptyFilterGroups();
   }
 
@@ -289,13 +364,19 @@ export const useMainStore = defineStore('main', () => {
     searchTerm,
     isSearching,
     filteredCards,
+    inks,
+    rarities,
+    classifications,
+    stories,
     setCurrentDeck,
     addCardToCurrentDeck,
     removeCardFromCurrentDeck,
     getDeckQuantity,
     filterGroups,
     setFilterGroups,
-    clearFilterGroups
+    clearFilters,
+    inkFilter,
+    rarityFilter
   }
 })
 
@@ -315,7 +396,7 @@ function adaptApiData(apiData: any): AppData {
       inkwell: apiCardData.inkwell,
       types: [apiCardData.type],
       rarity: apiCardData.rarity,
-      classifications: apiCardData.classifications,
+      classifications: apiCardData.subtypes,
       story: apiCardData.story,
       gameplayText: apiCardData.fullText,
       flavorText: apiCardData.flavorText,

@@ -50,7 +50,7 @@ const to = computed(() => {
     color: white;
 }
 
-.colors {
+.inks {
     display: flex;
     align-items: center;
     gap: 0.125rem;

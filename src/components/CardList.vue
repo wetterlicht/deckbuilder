@@ -44,9 +44,7 @@ const cardsWithQuantities = computed(() => {
 })
 
 function onScroll(event: Event) {
-    console.log("onScroll")
     const target = event.target as HTMLElement;
-    console.log(target.scrollHeight - target.scrollTop, target.clientHeight + 100)
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
         if (visibleCount.value < store.filteredCards.length) {
             visibleCount.value += VISIBLE_STEP;
