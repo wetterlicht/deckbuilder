@@ -10,6 +10,11 @@ html {
     --c-gold-dark: hsl(42, 19%, 25%);
 }
 
+html,
+body {
+    overscroll-behavior: none;
+}
+
 .back-button {
     border: none;
     color: white;
