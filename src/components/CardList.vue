@@ -1,7 +1,7 @@
 <template>
     <div class="card-list">
         <ul @scroll="onScroll">
-            <CardRow v-for="(entry, index) in cardsWithQuantities" :card="entry.card" :quantity="entry.quantity"
+            <CardRow v-for="(entry, index) in cardsWithQuantitiesSlice" :card="entry.card" :quantity="entry.quantity"
                 @selected="() => showCardCarousel(index)">
             </CardRow>
         </ul>
@@ -37,18 +37,26 @@ watch(() => props.cards, () => {
 });
 
 const cardsWithQuantities = computed(() => {
-    return props.cards.slice(0, visibleCount.value).map(card => ({
+    return props.cards.map(card => ({
         quantity: store.getDeckQuantity(card.id),
         card
     }))
 })
 
+const cardsWithQuantitiesSlice = computed(() => {
+    return cardsWithQuantities.value.slice(0, visibleCount.value)
+})
+
+function loadMore() {
+    if (visibleCount.value < store.filteredCards.length) {
+        visibleCount.value += VISIBLE_STEP;
+    }
+}
+
 function onScroll(event: Event) {
     const target = event.target as HTMLElement;
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
-        if (visibleCount.value < store.filteredCards.length) {
-            visibleCount.value += VISIBLE_STEP;
-        }
+        loadMore();
     }
 }
 

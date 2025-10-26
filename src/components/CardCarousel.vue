@@ -1,35 +1,37 @@
 <template>
     <div class="card-carousel" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
-        <ul class="track" :style="{ transform: `translateX(-${index * 100}vw)` }">
-            <li class="card" v-for="(entry, index) in cardsWithQuantities" :data-index="index">
-                <div class="card__title">
-                    <div class="card__name">
-                        {{ entry.card.name }}
-                    </div>
-                    <div class="card__version-name">
-                        {{ entry.card.version ?? '&nbsp;' }}
-                    </div>
+        <TransitionGroup tag="div" class="track" name="list">
+            <div class="entry" v-for="entry in loadedCards" :key="entry.key">
+                <div class="card" v-if="entry.card">
+                    <div class="card__title">
+                        <div class="card__name">
+                            {{ entry.card.name }}
+                        </div>
+                        <div class="card__version-name">
+                            {{ entry.card.version ?? '&nbsp;' }}
+                        </div>
 
+                    </div>
+                    <img :src="entry.card.images.full" :alt="entry.card.fullName">
+                    <div class="quantity">
+                        <button @click="store.removeCardFromCurrentDeck(entry.card.id)">
+                            <div class="icon-remove"></div>
+                        </button>
+                        <div>{{ entry.quantity }}</div>
+                        <button @click="store.addCardToCurrentDeck(entry.card.id)">
+                            <div class="icon-add"></div>
+                        </button>
+                    </div>
                 </div>
-                <img :src="entry.card.images.full" :alt="entry.card.fullName">
-                <div class="quantity">
-                    <button @click="store.removeCardFromCurrentDeck(entry.card.id)">
-                        <div class="icon-remove"></div>
-                    </button>
-                    <div>{{ entry.quantity }}</div>
-                    <button @click="store.addCardToCurrentDeck(entry.card.id)">
-                        <div class="icon-add"></div>
-                    </button>
-                </div>
-            </li>
-        </ul>
+            </div>
+        </TransitionGroup>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useMainStore } from '@/stores/main';
 import type { CardData } from '@/types';
-import { ref } from 'vue';
+import { computed, ref, TransitionGroup } from 'vue';
 
 const props = defineProps({
     cardsWithQuantities: {
@@ -40,7 +42,7 @@ const props = defineProps({
 
 const index = defineModel<number>('index', { required: true });
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'loadMore'])
 
 const store = useMainStore();
 
@@ -79,15 +81,40 @@ function handleTouchEnd(e: TouchEvent) {
     }
 }
 
+const loadedCards = computed(() => {
+    const sliceStart = Math.max(0, index.value - 1)
+    const sliceEnd = Math.min(props.cardsWithQuantities.length, index.value + 2)
+    const cards: Array<{ key: string, quantity?: number, card?: CardData }> = props.cardsWithQuantities
+        .slice(sliceStart, sliceEnd)
+        .map(entry => {
+            return {
+                ...entry,
+                key: entry.card.id
+            }
+        });
+
+    if (index.value === 0) {
+        cards.unshift({
+            key: "carousel-start"
+        })
+    } else if (index.value === props.cardsWithQuantities.length - 1) {
+        cards.push({
+            key: "carousel-end"
+        })
+    }
+
+    return cards;
+});
+
 function nextCard() {
     if (index.value < props.cardsWithQuantities.length - 1) {
-        index.value++
+        index.value = index.value + 1
     }
 }
 
 function prevCard() {
     if (index.value > 0) {
-        index.value--
+        index.value = index.value - 1
     }
 }
 </script>
@@ -109,19 +136,22 @@ function prevCard() {
     display: flex;
     width: 100%;
     height: 100%;
-    transition: transform 0.4s ease-in-out;
+    translate: -100dvw;
 }
 
-.card {
+.entry {
     width: 100vw;
     height: 100%;
     flex-shrink: 0;
     padding-top: 1rem;
+}
+
+.card {
+
     display: flex;
     flex-direction: column;
     align-items: center;
     row-gap: 1rem;
-
     color: white;
 
 
@@ -142,7 +172,7 @@ function prevCard() {
 
 .quantity {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     column-gap: 0.5rem;
     min-width: 90px;
@@ -180,5 +210,31 @@ function prevCard() {
     mask-image: url('/images/remove.svg');
     mask-size: cover;
     mask-position: center;
+}
+
+
+.list-move,
+.list-enter-active,
+.list-leave-active {
+    transition: transform 0.25s ease;
+}
+
+.list-enter-active,
+.list-leave-active {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.list-enter-from {
+    transform: translateX(100dvh);
+}
+
+.list-leave-to {
+    transform: translateX(-100dvh);
+}
+
+.list-leave-active {
+    position: absolute;
+    visibility: hidden;
 }
 </style>
