@@ -2,7 +2,6 @@ import CollectionTab from '@/components/CollectionTab.vue'
 import DecksTab from '@/components/DecksTab.vue'
 import DecksView from '@/components/DecksView.vue'
 import DeckView from '@/components/DeckView.vue'
-import SearchTab from '@/components/SearchTab.vue'
 import { useTabStore } from '@/stores/tabs'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -27,7 +26,6 @@ const router = createRouter({
         },
       ]
     },
-    { path: '/search', component: SearchTab, name: 'search' },
   ],
 })
 

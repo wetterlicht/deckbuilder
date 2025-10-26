@@ -16,7 +16,6 @@
 
 <script setup lang="ts">
 import { useTabStore } from '@/stores/tabs';
-import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -33,11 +32,6 @@ const tabs = [
         name: 'Decks',
         icon: 'deck',
         path: '/decks',
-    },
-    {
-        icon: 'search',
-        name: 'Search',
-        path: '/search'
     },
 ];
 
