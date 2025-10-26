@@ -24,6 +24,10 @@ const props = defineProps({
     cards: {
         type: Array<CardData>,
         required: true
+    },
+    sort: {
+        type: String,
+        default: 'name'
     }
 })
 
@@ -40,7 +44,25 @@ const cardsWithQuantities = computed(() => {
     return props.cards.map(card => ({
         quantity: store.getDeckQuantity(card.id),
         card
-    }))
+    })).sort((a, b) => {
+        if (props.sort === 'cost') {
+            if (a.card.cost < b.card.cost) {
+                return -1;
+            }
+            if (a.card.cost > b.card.cost) {
+                return 1;
+            }
+        }
+
+        if (a.card.name < b.card.name) {
+            return -1;
+        }
+        if (a.card.name > b.card.name) {
+            return 1;
+        }
+
+        return 0;
+    })
 })
 
 const cardsWithQuantitiesSlice = computed(() => {
