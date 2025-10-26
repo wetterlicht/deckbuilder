@@ -8,6 +8,12 @@ const DB_NAME = 'lorcana-deckbuilder';
 const API_DATA_STORE_NAME = 'api-data'
 const USER_DATA_STORE_NAME = 'user-data';
 
+import { createClient } from '@supabase/supabase-js'
+
+// Create a single supabase client for interacting with your database
+const supabase = createClient('https://qdqauljbsttstpolacua.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWF1bGpic3R0c3Rwb2xhY3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MTAzNjMsImV4cCI6MjA3Njk4NjM2M30.euW_DhGdeEy1UbXxY-GsRhBPieEC68g1OArVk9a1biI')
+
+
 export const useMainStore = defineStore('main', () => {
 
   // API Data
@@ -51,26 +57,25 @@ export const useMainStore = defineStore('main', () => {
 
   async function loadAPIData() {
     const db = await openDB(DB_NAME);
-    const metaResponse = await fetch('/lorcana-api/files/current/en/metadata.json');
-    if (!metaResponse.ok) {
+
+    let response = await supabase.functions.invoke('lorcanajson-metadata');
+    if (response.error) {
       throw new Error('Failed to fetch metadata');
     }
-    const metadata = await metaResponse.json();
+    const metadata = response.data;
     const storedVersion = await idbGet<string>(db, API_DATA_STORE_NAME, 'version');
 
-    let data;
     if (storedVersion !== metadata.formatVersion) {
-      const dataRes = await fetch('/lorcana-api/files/current/en/allCards.json');
-      if (!dataRes.ok) throw new Error('Failed to fetch cards data');
-      data = await dataRes.json();
-      await idbSet(db, API_DATA_STORE_NAME, 'data', adaptApiData(data));
+      response = await supabase.functions.invoke('lorcanajson-cards');
+      if (response.error) throw new Error('Failed to fetch cards data');
+      await idbSet(db, API_DATA_STORE_NAME, 'data', adaptApiData(response.data));
       await idbSet(db, API_DATA_STORE_NAME, 'version', metadata.formatVersion);
     } else {
-      data = await idbGet(db, API_DATA_STORE_NAME, 'data');
+      response.data = await idbGet(db, API_DATA_STORE_NAME, 'data');
     }
 
-    sets.value = data.sets;
-    cards.value = data.cards;
+    sets.value = response.data.sets;
+    cards.value = response.data.cards;
   }
 
   async function loadUserData() {

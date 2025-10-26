@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="loading-screen">
 
     </div>
 </template>
@@ -8,4 +8,10 @@
 
 </script>
 
-<style scoped></style>
+<style scoped>
+.loading-screen {
+    background-color: black;
+    height: 100dvh;
+    width: 100dvw;
+}
+</style>
