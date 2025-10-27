@@ -10,9 +10,7 @@ const USER_DATA_STORE_NAME = 'user-data';
 
 import { createClient } from '@supabase/supabase-js'
 
-// Create a single supabase client for interacting with your database
-const supabase = createClient('https://qdqauljbsttstpolacua.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWF1bGpic3R0c3Rwb2xhY3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MTAzNjMsImV4cCI6MjA3Njk4NjM2M30.euW_DhGdeEy1UbXxY-GsRhBPieEC68g1OArVk9a1biI')
-
+const supabase = createClient('https://qdqauljbsttstpolacua.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWF1bGpic3R0c3Rwb2xhY3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MTAzNjMsImV4cCI6MjA3Njk4NjM2M30.euW_DhGdeEy1UbXxY-GsRhBPieEC68g1OArVk9a1biI');
 
 export const useMainStore = defineStore('main', () => {
 
@@ -53,6 +51,7 @@ export const useMainStore = defineStore('main', () => {
     } catch (error) {
       console.error('Error loading data:', error);
     }
+    syncDecks();
   }
 
   async function loadAPIData() {
@@ -97,10 +96,46 @@ export const useMainStore = defineStore('main', () => {
     } catch (err) {
       console.error('Failed to save decks:', err);
     }
+    syncDecks();
+  }
+
+  async function syncDecks() {
+    try {
+      const localDecks = decksData.value;
+      const remoteDecks = (await supabase.from('decks').select()).data ?? [] as Array<DeckData>;
+
+      const newRemoteDecks = remoteDecks.filter(remoteDeck => {
+        return !localDecks.some(localDeck => remoteDeck.id === localDeck.id);
+      })
+      decksData.value.push(...newRemoteDecks);
+
+      remoteDecks.forEach(remoteDeck => {
+        const localDeckIndex = decksData.value.findIndex(localDeck => localDeck.id === remoteDeck.id);
+        if (localDeckIndex !== -1 && decksData.value[localDeckIndex]!.updated_at < remoteDeck.updated_at) {
+          decksData.value[localDeckIndex] = remoteDeck;
+        }
+      });
+
+      const newLocalDecks = localDecks.filter(localDeck => {
+        return !remoteDecks.some(remoteDeck => remoteDeck.id === localDeck.id);
+      })
+      await supabase.from('decks').insert(newLocalDecks);
+
+      const updatedLocalDecks = localDecks.filter(localDeck => {
+        const remoteDeck = remoteDecks.find(remoteDeck => remoteDeck.id === localDeck.id);
+        return remoteDeck && localDeck.updated_at > remoteDeck.updated_at;
+      })
+      for (const deck of updatedLocalDecks) {
+        await supabase.from('decks').update(deck).eq('id', deck.id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   const debouncedSaveDecks = debounce(saveDecks, 300);
   watch(decksData, () => debouncedSaveDecks(), { deep: true });
+
 
   const currentDeckWithCards: ComputedRef<DeckDataWithCards> = computed(() => {
     return decksWithCards.value.find(deck => deck.id === currentDeckId.value) as DeckDataWithCards;
@@ -316,6 +351,7 @@ export const useMainStore = defineStore('main', () => {
       } else {
         currentDeck.value.cards.push({ id, quantity: 1 })
       }
+      currentDeck.value.updated_at = new Date().toISOString();
     }
   }
 
@@ -331,6 +367,7 @@ export const useMainStore = defineStore('main', () => {
           }
         }
       }
+      currentDeck.value.updated_at = new Date().toISOString();
     }
   }
 
@@ -338,7 +375,8 @@ export const useMainStore = defineStore('main', () => {
     const deckData: DeckData = {
       id: v4(),
       name,
-      cards: []
+      cards: [],
+      updated_at: new Date().toISOString()
     }
     decksData.value.push(deckData)
     return deckData.id;
@@ -466,3 +504,4 @@ function debounce(fn: (...args: any[]) => void, delay = 300) {
     timer = setTimeout(() => fn(...args), delay);
   };
 }
+

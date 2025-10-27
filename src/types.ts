@@ -37,6 +37,7 @@ export interface DeckData {
         id: string,
         quantity: number,
     }>
+    updated_at: string,
 }
 
 export interface DeckDataWithCards {
