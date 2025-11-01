@@ -118,7 +118,8 @@ export const useMainStore = defineStore('main', () => {
 
       remoteDecks.forEach(remoteDeck => {
         const localDeckIndex = decksData.value.findIndex(localDeck => localDeck.id === remoteDeck.id);
-        if (localDeckIndex !== -1 && decksData.value[localDeckIndex]!.updated_at < remoteDeck.updated_at) {
+        if (localDeckIndex !== -1 &&
+          new Date(decksData.value[localDeckIndex]!.updated_at).getTime() < new Date(remoteDeck.updated_at).getTime()) {
           decksData.value[localDeckIndex] = remoteDeck;
         }
       });
@@ -132,11 +133,9 @@ export const useMainStore = defineStore('main', () => {
 
       const updatedLocalDecks = localDecks.filter(localDeck => {
         const remoteDeck = remoteDecks.find(remoteDeck => remoteDeck.id === localDeck.id);
-        console.log(remoteDeck.name, remoteDeck.updated_at, localDeck.name, localDeck.updated_at, remoteDeck && localDeck.updated_at > remoteDeck.updated_at);
-        return remoteDeck && localDeck.updated_at > remoteDeck.updated_at;
+        return remoteDeck && new Date(localDeck.updated_at).getTime() > new Date(remoteDeck.updated_at).getTime()
       })
       for (const deck of updatedLocalDecks) {
-        console.log(deck.updated_at);
         const { error } = await supabase.from('decks').update(deck).eq('id', deck.id);
         if (error) {
           console.log(error);
