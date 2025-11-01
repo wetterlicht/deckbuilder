@@ -13,6 +13,7 @@ import { createClient, RealtimeChannel } from '@supabase/supabase-js'
 const supabase = createClient('https://qdqauljbsttstpolacua.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWF1bGpic3R0c3Rwb2xhY3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MTAzNjMsImV4cCI6MjA3Njk4NjM2M30.euW_DhGdeEy1UbXxY-GsRhBPieEC68g1OArVk9a1biI');
 let syncChannel: RealtimeChannel;
 
+const CLIENT_ID = crypto.randomUUID();
 
 export const useMainStore = defineStore('main', () => {
 
@@ -150,7 +151,9 @@ export const useMainStore = defineStore('main', () => {
 
   function syncSubscribe() {
     syncChannel = supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'decks', }, (payload) => {
-      debouncedSyncDecks();
+      if ((payload.new as DeckData)?.updated_by_client_id !== CLIENT_ID) {
+        debouncedSyncDecks();
+      }
     }).subscribe();
   }
 
@@ -374,6 +377,7 @@ export const useMainStore = defineStore('main', () => {
         currentDeck.value.cards.push({ id, quantity: 1 })
       }
       currentDeck.value.updated_at = new Date().toISOString();
+      currentDeck.value.updated_by_client_id = CLIENT_ID;
       debouncedSaveDecks();
     }
   }
@@ -391,6 +395,7 @@ export const useMainStore = defineStore('main', () => {
         }
       }
       currentDeck.value.updated_at = new Date().toISOString();
+      currentDeck.value.updated_by_client_id = CLIENT_ID;
       debouncedSaveDecks();
     }
   }
@@ -400,7 +405,8 @@ export const useMainStore = defineStore('main', () => {
       id: v4(),
       name,
       cards: [],
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      updated_by_client_id: CLIENT_ID
     }
     decksData.value.push(deckData)
     debouncedSaveDecks();

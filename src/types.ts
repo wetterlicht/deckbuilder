@@ -38,6 +38,7 @@ export interface DeckData {
         quantity: number,
     }>
     updated_at: string,
+    updated_by_client_id: string,
 }
 
 export interface DeckDataWithCards {
