@@ -24,18 +24,24 @@
 <script setup lang="ts">
 import { useMainStore } from '@/stores/main';
 
-import { useRoute } from 'vue-router';
-import { computed, ref } from 'vue';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
+import { computed, onMounted, ref, watch } from 'vue';
 import BackButton from './BackButton.vue';
 import PageHeader from './PageHeader.vue';
 import CardList from './CardList.vue';
 import Filters from './Filters.vue';
 
 const store = useMainStore();
+const route = useRoute();
 
-const id = useRoute().params.id as string;
+onMounted(
+    () => store.setCurrentDeck(route.params.id as string)
+)
 
-store.setCurrentDeck(id);
+watch(() => route.params.id, () => {
+    store.setCurrentDeck(route.params.id as string)
+})
+
 
 const deck = computed(() => store.currentDeckWithCards)
 
