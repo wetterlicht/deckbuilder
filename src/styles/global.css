@@ -15,6 +15,35 @@ body {
     overscroll-behavior: none;
 }
 
+.base-dialog {
+    color: white;
+    background-color: black;
+    border-radius: 1rem;
+    border: none;
+
+    .buttons {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: flex-end;
+        column-gap: 1rem
+    }
+
+    .action-button {
+        border-radius: 100vh;
+        border: none;
+        padding-block: 0.5rem;
+        padding-inline: 1rem;
+        background-color: var(--c-gold);
+        font-weight: bold;
+
+        &.action-button--secondary {
+            background: none;
+            color: var(--c-gold);
+
+        }
+    }
+}
+
 .back-button {
     border: none;
     color: white;

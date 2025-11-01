@@ -39,6 +39,7 @@ export interface DeckData {
     }>
     updated_at: string,
     updated_by_client_id: string,
+    deleted_at?: string
 }
 
 export interface DeckDataWithCards {

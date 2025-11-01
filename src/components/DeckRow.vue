@@ -6,12 +6,43 @@
             </div>
             <div class="name">{{ deck.name }}</div>
         </RouterLink>
+        <button class="context-menu-button" @click="showContextMenuDialog"></button>
+
+        <dialog ref="contextMenuDialog" class="base-dialog context-menu-dialog" closedby="any">
+            <div class="context-menu__buttons">
+                <h2>{{ deck.name }}</h2>
+                <button class="button button--edit" type="button" @click="showEditDeckDialog">Edit</button>
+                <button class="button button--delete" type="button" @click="showDeleteDeckDialog">Delete</button>
+            </div>
+        </dialog>
+
+        <dialog ref="editDeckDialog" class="base-dialog edit-deck-dialog">
+            <form @submit.prevent="editDeck">
+                <label for="deck-name">Name</label>
+                <input type="text" id="deck-name" v-model="deckName" required>
+                <div class="buttons"><button class="action-button action-button--secondary" type="button"
+                        @click="editDeckDialog?.close()">Cancel</button><button class="action-button"
+                        type="submit">Save</button>
+                </div>
+            </form>
+        </dialog>
+
+        <dialog ref="deleteDeckDialog" class="base-dialog">
+            <form @submit.prevent="deleteDeck">
+                <p>Are you sure you want to delete the deck <strong>{{ deck.name }}</strong>?</p>
+                <div class="buttons"><button class="action-button action-button--secondary" type="button"
+                        @click="deleteDeckDialog?.close()">Cancel</button><button class="action-button"
+                        type="submit">Delete</button>
+                </div>
+            </form>
+        </dialog>
     </li>
 </template>
 
 <script setup lang="ts">
+import { useMainStore } from '@/stores/main';
 import type { DeckDataWithCards } from '@/types';
-import { computed, type PropType } from 'vue';
+import { computed, ref, type PropType } from 'vue';
 import { RouterLink } from 'vue-router';
 
 const props = defineProps({
@@ -20,6 +51,39 @@ const props = defineProps({
         required: true
     }
 })
+
+const store = useMainStore();
+
+const contextMenuDialog = ref<HTMLDialogElement>();
+const editDeckDialog = ref<HTMLDialogElement>();
+const deleteDeckDialog = ref<HTMLDialogElement>();
+const deckName = ref<string>(props.deck.name);
+
+function showContextMenuDialog() {
+    contextMenuDialog.value?.showModal();
+
+}
+
+function showEditDeckDialog() {
+    contextMenuDialog.value?.close();
+    editDeckDialog.value?.showModal();
+}
+
+function editDeck() {
+    store.renameDeck(props.deck.id, deckName.value)
+    editDeckDialog.value?.close();
+}
+
+function showDeleteDeckDialog() {
+    contextMenuDialog.value?.close();
+    deleteDeckDialog.value?.showModal();
+}
+
+
+function deleteDeck() {
+    store.deleteDeck(props.deck.id);
+    deleteDeckDialog.value?.close();
+}
 
 const to = computed(() => {
     return {
@@ -33,10 +97,14 @@ const to = computed(() => {
 .deck-row {
     color: white;
     border-top: 2px solid var(--c-gold);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
 
     &:last-child {
         border-bottom: 2px solid var(--c-gold);
     }
+
 }
 
 .deck-row a {
@@ -57,6 +125,82 @@ const to = computed(() => {
 
     img {
         height: 2rem;
+    }
+}
+
+.context-menu-button {
+    height: 1.5rem;
+    width: 1.5rem;
+    color: white;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-image: url('/images/context_menu.svg');
+    mask-size: cover;
+    mask-position: center;
+}
+
+.context-menu-dialog {
+    width: 100%;
+
+    h2 {
+        color: white;
+        font-size: 1.125rem;
+    }
+
+    .context-menu__buttons {
+        display: grid;
+        row-gap: 0.5rem;
+
+        .button {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            column-gap: 0.5rem;
+            background: none;
+            font-weight: bold;
+            color: white;
+            border: none;
+            text-align: left;
+            width: 100%;
+            padding-inline: 0;
+            padding-block: 0.5rem;
+
+            &::before {
+                content: '';
+                height: 1.5rem;
+                width: 1.5rem;
+                background-color: currentColor;
+                mask-repeat: no-repeat;
+                mask-size: cover;
+                mask-position: center;
+            }
+
+            &.button--edit::before {
+                mask-image: url('/images/edit.svg');
+            }
+
+            &.button--delete::before {
+                mask-image: url('/images/trash.svg');
+            }
+        }
+    }
+}
+
+.edit-deck-dialog {
+    label {
+        display: blocK;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    input {
+        color: white;
+        width: 100%;
+        border-radius: 100vh;
+        padding-block: 0.5rem;
+        padding-inline: 1rem;
+        background-color: #333;
+        border: none;
     }
 }
 </style>

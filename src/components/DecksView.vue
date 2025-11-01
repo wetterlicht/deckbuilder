@@ -18,12 +18,13 @@
             </button>
         </div>
 
-        <dialog ref="newDeckDialog" class="new-deck-dialog">
+        <dialog ref="newDeckDialog" class="base-dialog new-deck-dialog">
             <form @submit.prevent="addNewDeck">
                 <label for="new-deck-name">Name</label>
                 <input type="text" id="new-deck-name" v-model="newDeckName" required>
-                <div class="buttons"><button class="action-button action-button--secondary"
-                        formmethod="dialog">Cancel</button><button class="action-button" type="submit">Create</button>
+                <div class="buttons"><button class="action-button action-button--secondary" type="button"
+                        @click="newDeckDialog?.close()">Cancel</button><button class="action-button"
+                        type="submit">Create</button>
                 </div>
             </form>
         </dialog>
@@ -41,6 +42,7 @@ const store = useMainStore()
 const isMenuOpen = ref<Boolean>(false);
 const newDeckDialog = ref<HTMLDialogElement>();
 
+
 function toggleMenu() {
     isMenuOpen.value = !isMenuOpen.value
 }
@@ -49,6 +51,7 @@ const newDeckName = ref<string>('');
 
 function showNewDeckDialog() {
     isMenuOpen.value = false;
+    newDeckName.value = '';
     newDeckDialog.value?.showModal();
 }
 
@@ -165,10 +168,6 @@ function addNewDeck() {
 }
 
 .new-deck-dialog {
-    background-color: black;
-    border-radius: 1rem;
-
-
     label {
         display: blocK;
         color: white;
@@ -183,28 +182,6 @@ function addNewDeck() {
         padding-inline: 1rem;
         background-color: #333;
         border: none;
-    }
-
-    .buttons {
-        margin-top: 2rem;
-        display: flex;
-        justify-content: flex-end;
-        column-gap: 1rem
-    }
-
-    .action-button {
-        border-radius: 100vh;
-        border: none;
-        padding-block: 0.5rem;
-        padding-inline: 1rem;
-        background-color: var(--c-gold);
-        font-weight: bold;
-
-        &.action-button--secondary {
-            background: none;
-            color: var(--c-gold);
-
-        }
     }
 }
 </style>

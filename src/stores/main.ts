@@ -24,7 +24,7 @@ export const useMainStore = defineStore('main', () => {
   // Decks
   const decksData: Ref<Array<DeckData>> = ref([]);
   const decksWithCards: ComputedRef<Array<DeckDataWithCards>> = computed(() => {
-    return decksData.value.map(deckData => {
+    return decksData.value.filter(deck => !deck.deleted_at).map(deckData => {
       const cards: Array<{
         id: string,
         quantity: number,
@@ -104,7 +104,6 @@ export const useMainStore = defineStore('main', () => {
   }
 
   const debouncedSaveDecks = debounce(saveDecks, 300);
-  watch(decksData, () => debouncedSaveDecks(), { deep: true });
 
   async function syncDecks() {
     try {
@@ -155,11 +154,6 @@ export const useMainStore = defineStore('main', () => {
       }
     }).subscribe();
   }
-
-  function syncUnsubscribe() {
-    syncChannel.unsubscribe();
-  }
-
 
   const currentDeckWithCards: ComputedRef<DeckDataWithCards> = computed(() => {
     return decksWithCards.value.find(deck => deck.id === currentDeckId.value) as DeckDataWithCards;
@@ -407,9 +401,27 @@ export const useMainStore = defineStore('main', () => {
       updated_at: new Date().toISOString(),
       updated_by_client_id: CLIENT_ID
     }
-    decksData.value.push(deckData)
+    decksData.value.push(deckData);
     debouncedSaveDecks();
     return deckData.id;
+  }
+
+  function renameDeck(id: string, name: string) {
+    const index = decksWithCards.value.findIndex(deck => deck.id === id);
+    if (index >= 0 && decksData.value[index]) {
+      decksData.value[index].name = name
+      decksData.value[index].updated_at = new Date().toISOString();
+      debouncedSaveDecks();
+    }
+  }
+
+  function deleteDeck(id: string) {
+    const index = decksWithCards.value.findIndex(deck => deck.id === id);
+    if (index >= 0 && decksData.value[index]) {
+      decksData.value[index].updated_at = new Date().toISOString();
+      decksData.value[index].deleted_at = new Date().toISOString();
+      debouncedSaveDecks();
+    }
   }
 
   function getDeckQuantity(cardId: string) {
@@ -432,6 +444,8 @@ export const useMainStore = defineStore('main', () => {
     loadData,
     decksWithCards,
     addDeck,
+    deleteDeck,
+    renameDeck,
     currentDeck,
     currentDeckWithCards,
     searchTerm,
