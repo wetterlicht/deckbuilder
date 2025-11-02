@@ -71,14 +71,16 @@ export const useMainStore = defineStore('main', () => {
     if (storedVersion !== metadata.formatVersion) {
       response = await supabase.functions.invoke('lorcanajson-cards');
       if (response.error) throw new Error('Failed to fetch cards data');
-      await idbSet(db, API_DATA_STORE_NAME, 'data', adaptApiData(response.data));
+      const data = adaptApiData(response.data);
+      await idbSet(db, API_DATA_STORE_NAME, 'data', data);
       await idbSet(db, API_DATA_STORE_NAME, 'version', metadata.formatVersion);
+      sets.value = data.sets;
+      cards.value = data.cards;
     } else {
-      response.data = await idbGet(db, API_DATA_STORE_NAME, 'data');
+      const data = await idbGet(db, API_DATA_STORE_NAME, 'data') as AppData;
+      sets.value = data.sets;
+      cards.value = data.cards;
     }
-
-    sets.value = response.data.sets;
-    cards.value = response.data.cards;
   }
 
   async function loadUserData() {
@@ -200,7 +202,8 @@ export const useMainStore = defineStore('main', () => {
   })
 
   function getCardById(id: string): CardData | undefined {
-    return cards.value.find(card => card.id === id);
+    const card = cards.value.find(card => card.id === id);
+    return card;
   }
 
   function createEmptyFilterGroups() {
