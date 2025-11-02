@@ -1,6 +1,6 @@
-import { computed, ref, watch, type ComputedRef, type Ref, toRaw } from 'vue'
+import { computed, ref, type ComputedRef, type Ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
-import type { AppData, CardData, DeckData, DeckDataWithCards, FilterGroupByStat, ListStat, NumberStat, SetData, TextStat } from '@/types';
+import type { AppData, CardData, CollectionChange, CollectionDataWithCards, DeckData, DeckDataWithCards, FilterGroupByStat, ListStat, NumberStat, SetData, TextStat } from '@/types';
 import { stats } from '@/types';
 import { v4 } from "uuid"
 
@@ -8,10 +8,9 @@ const DB_NAME = 'lorcana-deckbuilder';
 const API_DATA_STORE_NAME = 'api-data'
 const USER_DATA_STORE_NAME = 'user-data';
 
-import { createClient, RealtimeChannel } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient('https://qdqauljbsttstpolacua.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWF1bGpic3R0c3Rwb2xhY3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MTAzNjMsImV4cCI6MjA3Njk4NjM2M30.euW_DhGdeEy1UbXxY-GsRhBPieEC68g1OArVk9a1biI');
-let syncChannel: RealtimeChannel;
 
 const CLIENT_ID = crypto.randomUUID();
 
@@ -34,7 +33,7 @@ export const useMainStore = defineStore('main', () => {
           ...cardEntry,
           data: getCardById(cardEntry.id)
         }
-      }).filter((card): card is { id: string, quantity: number; data: CardData } => card !== undefined)
+      }).filter((card): card is { id: string, quantity: number; data: CardData } => card.data !== undefined)
 
       const inks = Array.from(cards.reduce((acc, cur) => {
         cur.data.inks.forEach(ink => acc.add(ink))
@@ -47,6 +46,28 @@ export const useMainStore = defineStore('main', () => {
     })
   });
 
+  // Collection
+  const collectionChanges: Ref<Array<CollectionChange>> = ref([]);
+
+  const collectionWithCards: ComputedRef<CollectionDataWithCards> = computed(() => {
+    const quantities = collectionChanges.value.reduce((acc, cur) => {
+      acc[cur.cardId] = acc[cur.cardId] ?? 0 + cur.change
+      return acc;
+    }, {} as Record<string, number>)
+
+    const cards: Array<{ id: string, quantity: number, data: CardData }> = Object.keys(quantities).map(id => {
+      return {
+        id,
+        quantity: quantities[id] ?? 0,
+        data: getCardById(id)
+      }
+    }).filter((card): card is { id: string, quantity: number; data: CardData } => card.data !== undefined)
+
+    return {
+      cards
+    }
+  });
+
   async function loadData() {
     try {
       await loadAPIData();
@@ -54,7 +75,9 @@ export const useMainStore = defineStore('main', () => {
     } catch (error) {
       console.error('Error loading data:', error);
     }
-    syncDecks();
+
+    syncCollectionFromServer().catch(error => console.error('Failed to sync collection from server:', error))
+    syncDecksFromServer().catch((error) => console.error('Error syncing decks from server:', error));
     syncSubscribe();
   }
 
@@ -90,8 +113,59 @@ export const useMainStore = defineStore('main', () => {
       if (loadedDecks) {
         decksData.value = loadedDecks;
       }
+      const loadedCollectionChanges = await idbGet<Array<CollectionChange>>(db, USER_DATA_STORE_NAME, 'collection');
+      if (loadedCollectionChanges) {
+        collectionChanges.value = loadedCollectionChanges;
+      }
     } catch (err) {
       console.error('Failed to load user data:', err);
+    }
+  }
+
+  async function saveCollection() {
+    try {
+      const db = await openDB(DB_NAME);
+      await idbSet(db, USER_DATA_STORE_NAME, 'collection', structuredClone(toRaw(collectionChanges.value)));
+    } catch (err) {
+      console.error('Failed to save collection:', err);
+    }
+    syncCollectionToServer().catch(error => console.error('Failed to sync collection to server:', error))
+  }
+
+  const debouncedSaveCollection = debounce(saveCollection, 300);
+
+  async function syncCollectionFromServer() {
+    try {
+      const localChanges = collectionChanges.value;
+      const remoteChanges = ((await supabase.from('collection').select()).data ?? []) as Array<CollectionChange>
+      const mergedChanges = [
+        ...[...localChanges, ...remoteChanges].reduce((acc, cur) => acc.set(cur.id, cur), new Map()).values()
+      ];
+      collectionChanges.value = mergedChanges;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const debouncedSyncCollectionFromServer = debounce(syncCollectionToServer, 300);
+
+  async function syncCollectionToServer() {
+    try {
+      const localChanges = collectionChanges.value;
+      const remoteChanges = ((await supabase.from('collection').select()).data ?? []) as Array<CollectionChange>
+      const remoteChangeIds = new Set(remoteChanges.map(change => change.id));
+      const changesToInsert = localChanges.filter(change => !remoteChangeIds.has(change.id));
+      if (changesToInsert.length) {
+        const { error } = await supabase
+          .from('collection')
+          .insert(changesToInsert);
+
+        if (error) {
+          throw new Error(`Error inserting changes: ${error.message}`);
+        }
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -102,28 +176,35 @@ export const useMainStore = defineStore('main', () => {
     } catch (err) {
       console.error('Failed to save decks:', err);
     }
-    syncDecks();
+    syncDecksToServer().catch(error => console.error('Failed to sync decks to server:', error))
   }
 
   const debouncedSaveDecks = debounce(saveDecks, 300);
 
-  async function syncDecks() {
+  async function syncDecksFromServer() {
     try {
-      const localDecks = decksData.value;
       const remoteDecks = (await supabase.from('decks').select()).data ?? [] as Array<DeckData>;
-
-      const newRemoteDecks = remoteDecks.filter(remoteDeck => {
-        return !localDecks.some(localDeck => remoteDeck.id === localDeck.id);
-      })
-      decksData.value.push(...newRemoteDecks);
 
       remoteDecks.forEach(remoteDeck => {
         const localDeckIndex = decksData.value.findIndex(localDeck => localDeck.id === remoteDeck.id);
         if (localDeckIndex !== -1 &&
           new Date(decksData.value[localDeckIndex]!.updated_at).getTime() < new Date(remoteDeck.updated_at).getTime()) {
           decksData.value[localDeckIndex] = remoteDeck;
+        } else {
+          decksData.value.push(remoteDeck);
+
         }
       });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  const debouncedSyncDecksFromServer = debounce(syncDecksFromServer, 300);
+
+  async function syncDecksToServer() {
+    try {
+      const localDecks = decksData.value;
+      const remoteDecks = (await supabase.from('decks').select()).data ?? [] as Array<DeckData>;
 
       const newLocalDecks = localDecks.filter(localDeck => {
         return !remoteDecks.some(remoteDeck => remoteDeck.id === localDeck.id);
@@ -147,14 +228,16 @@ export const useMainStore = defineStore('main', () => {
     }
   }
 
-  const debouncedSyncDecks = debounce(syncDecks, 300);
-
   function syncSubscribe() {
-    syncChannel = supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'decks', }, (payload) => {
-      if ((payload.new as DeckData)?.updated_by_client_id !== CLIENT_ID) {
-        debouncedSyncDecks();
-      }
-    }).subscribe();
+    supabase.channel('db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'collection', }, (payload) => {
+        debouncedSyncCollectionFromServer();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'decks', }, (payload) => {
+        if ((payload.new as DeckData)?.updated_by_client_id !== CLIENT_ID) {
+          debouncedSyncDecksFromServer();
+        }
+      }).subscribe();
   }
 
   const currentDeckWithCards: ComputedRef<DeckDataWithCards> = computed(() => {
@@ -353,6 +436,24 @@ export const useMainStore = defineStore('main', () => {
     }, 0) > 0;
   })
 
+  function addCardToCollection(cardId: string) {
+    collectionChanges.value.push({
+      id: v4(),
+      cardId,
+      change: 1
+    })
+    debouncedSaveCollection();
+  }
+
+  function removeCardFromCollection(cardId: string) {
+    collectionChanges.value.push({
+      id: v4(),
+      cardId,
+      change: -1
+    })
+    debouncedSaveCollection();
+  }
+
   const currentDeckId: Ref<string | undefined> = ref();
 
   const currentDeck: ComputedRef<DeckData | undefined> = computed(() => {
@@ -445,6 +546,9 @@ export const useMainStore = defineStore('main', () => {
 
   return {
     loadData,
+    collectionWithCards,
+    addCardToCollection,
+    removeCardFromCollection,
     decksWithCards,
     addDeck,
     deleteDeck,

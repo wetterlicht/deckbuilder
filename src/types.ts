@@ -30,6 +30,20 @@ export interface CardData {
 
 export interface SetData { }
 
+export interface CollectionChange {
+    id: string,
+    cardId: string,
+    change: number
+}
+
+export interface CollectionDataWithCards {
+    cards: Array<{
+        id: string,
+        quantity: number,
+        data: CardData
+    }>,
+}
+
 export interface DeckData {
     id: string,
     name: string,
