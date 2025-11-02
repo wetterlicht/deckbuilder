@@ -271,5 +271,10 @@ details+details {
     display: flex;
     justify-content: center;
     column-gap: 2rem;
+    pointer-events: none;
+
+    button {
+        pointer-events: auto;
+    }
 }
 </style>
