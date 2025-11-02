@@ -24,14 +24,14 @@ const tabsStore = useTabStore();
 
 const tabs = [
     {
-        icon: 'collection',
-        name: 'Collection',
-        path: '/collection',
-    },
-    {
         name: 'Decks',
         icon: 'deck',
         path: '/decks',
+    },
+    {
+        icon: 'collection',
+        name: 'Collection',
+        path: '/collection',
     },
 ];
 

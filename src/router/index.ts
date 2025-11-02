@@ -8,7 +8,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: { name: 'collection' } },
+    { path: '/', redirect: { name: 'decks' } },
     { path: '/collection', component: CollectionTab, name: 'collection' },
     {
       path: '/decks',
