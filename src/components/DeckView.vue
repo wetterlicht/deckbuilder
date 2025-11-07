@@ -11,6 +11,8 @@
                     </div>
                     <div class="name">{{ deck.name }}</div>
                 </div>
+                <div class="deck-view__total_quantity">{{ totalQuantity }} {{ totalQuantity == 1 ? 'card' : 'cards' }}
+                </div>
             </template>
         </PageHeader>
         <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)" sort="cost"></CardList>
@@ -40,6 +42,9 @@ onActivated(() => {
 })
 
 const deck = computed(() => store.currentDeckWithCards)
+
+const totalQuantity = deck.value.cards.reduce((acc, cur) => acc + cur.quantity, 0)
+
 const showFilters = ref(false);
 
 </script>
@@ -50,6 +55,12 @@ const showFilters = ref(false);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+}
+
+.deck-view__total_quantity {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: normal;
 }
 
 .deck-view__card-list {
