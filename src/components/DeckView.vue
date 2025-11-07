@@ -43,7 +43,7 @@ onActivated(() => {
 
 const deck = computed(() => store.currentDeckWithCards)
 
-const totalQuantity = deck.value.cards.reduce((acc, cur) => acc + cur.quantity, 0)
+const totalQuantity = computed(() => deck.value.cards.reduce((acc, cur) => acc + cur.quantity, 0));
 
 const showFilters = ref(false);
 
