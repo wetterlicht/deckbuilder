@@ -14,12 +14,12 @@
         </div>
         <div class="card-row__quantity">
             <template v-if="quantity > 0">
-                <button @click="store.removeCardFromCurrentDeck(card.id)">
+                <button @click="store.removeCard(card.id)">
                     <div class="icon-remove"></div>
                 </button>
                 <div>{{ quantity }}</div>
             </template>
-            <button @click="store.addCardToCurrentDeck(card.id)">
+            <button @click="store.addCard(card.id)">
                 <div class="icon-add"></div>
             </button>
         </div>

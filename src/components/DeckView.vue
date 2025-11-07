@@ -24,8 +24,8 @@
 <script setup lang="ts">
 import { useMainStore } from '@/stores/main';
 
-import { onBeforeRouteUpdate, useRoute } from 'vue-router';
-import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { computed, onActivated, ref } from 'vue';
 import BackButton from './BackButton.vue';
 import PageHeader from './PageHeader.vue';
 import CardList from './CardList.vue';
@@ -34,17 +34,12 @@ import Filters from './Filters.vue';
 const store = useMainStore();
 const route = useRoute();
 
-onMounted(
-    () => store.setCurrentDeck(route.params.id as string)
-)
-
-watch(() => route.params.id, () => {
+onActivated(() => {
+    store.context = 'deck'
     store.setCurrentDeck(route.params.id as string)
 })
 
-
 const deck = computed(() => store.currentDeckWithCards)
-
 const showFilters = ref(false);
 
 </script>

@@ -14,11 +14,11 @@
                     </div>
                     <img :src="entry.card.images.full" :alt="entry.card.fullName">
                     <div class="quantity">
-                        <button @click="store.removeCardFromCurrentDeck(entry.card.id)">
+                        <button @click="store.removeCard(entry.card.id)">
                             <div class="icon-remove"></div>
                         </button>
                         <div>{{ entry.quantity }}</div>
-                        <button @click="store.addCardToCurrentDeck(entry.card.id)">
+                        <button @click="store.addCard(entry.card.id)">
                             <div class="icon-add"></div>
                         </button>
                     </div>

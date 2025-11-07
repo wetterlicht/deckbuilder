@@ -1,6 +1,6 @@
 import { computed, ref, type ComputedRef, type Ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
-import type { AppData, CardData, CollectionChange, CollectionDataWithCards, DeckData, DeckDataWithCards, FilterGroupByStat, ListStat, NumberStat, SetData, TextStat } from '@/types';
+import type { AppData, CardData, CollectionChange, CollectionDataWithCards, Context, DeckData, DeckDataWithCards, FilterGroupByStat, ListStat, NumberStat, SetData, TextStat } from '@/types';
 import { stats } from '@/types';
 import { v4 } from "uuid"
 
@@ -15,6 +15,8 @@ const supabase = createClient('https://qdqauljbsttstpolacua.supabase.co', 'eyJhb
 const CLIENT_ID = crypto.randomUUID();
 
 export const useMainStore = defineStore('main', () => {
+
+  const context = ref<Context>();
 
   // API Data
   const sets = ref({})
@@ -50,8 +52,9 @@ export const useMainStore = defineStore('main', () => {
   const collectionChanges: Ref<Array<CollectionChange>> = ref([]);
 
   const collectionWithCards: ComputedRef<CollectionDataWithCards> = computed(() => {
+    console.log("collectionWithCards")
     const quantities = collectionChanges.value.reduce((acc, cur) => {
-      acc[cur.cardId] = acc[cur.cardId] ?? 0 + cur.change
+      acc[cur.cardId] = (acc[cur.cardId] ?? 0) + cur.change
       return acc;
     }, {} as Record<string, number>)
 
@@ -61,7 +64,7 @@ export const useMainStore = defineStore('main', () => {
         quantity: quantities[id] ?? 0,
         data: getCardById(id)
       }
-    }).filter((card): card is { id: string, quantity: number; data: CardData } => card.data !== undefined)
+    }).filter((card): card is { id: string, quantity: number; data: CardData } => card.data !== undefined && card.quantity > 0)
 
     return {
       cards
@@ -187,12 +190,14 @@ export const useMainStore = defineStore('main', () => {
 
       remoteDecks.forEach(remoteDeck => {
         const localDeckIndex = decksData.value.findIndex(localDeck => localDeck.id === remoteDeck.id);
-        if (localDeckIndex !== -1 &&
-          new Date(decksData.value[localDeckIndex]!.updated_at).getTime() < new Date(remoteDeck.updated_at).getTime()) {
-          decksData.value[localDeckIndex] = remoteDeck;
+        if (localDeckIndex !== -1
+        ) {
+          if (new Date(decksData.value[localDeckIndex]!.updated_at).getTime() < new Date(remoteDeck.updated_at).getTime()) {
+            decksData.value[localDeckIndex] = remoteDeck;
+          }
         } else {
+          console.log("Add remote deck", remoteDeck)
           decksData.value.push(remoteDeck);
-
         }
       });
     } catch (error) {
@@ -520,7 +525,7 @@ export const useMainStore = defineStore('main', () => {
   }
 
   function deleteDeck(id: string) {
-    const index = decksWithCards.value.findIndex(deck => deck.id === id);
+    const index = decksData.value.findIndex(deck => deck.id === id);
     if (index >= 0 && decksData.value[index]) {
       decksData.value[index].updated_at = new Date().toISOString();
       decksData.value[index].deleted_at = new Date().toISOString();
@@ -530,6 +535,10 @@ export const useMainStore = defineStore('main', () => {
 
   function getDeckQuantity(cardId: string) {
     return currentDeck.value?.cards.find(card => card.id === cardId)?.quantity ?? 0;
+  }
+
+  function getCollectionQuantity(cardId: string) {
+    return collectionWithCards.value?.cards.find(card => card.id === cardId)?.quantity ?? 0;
   }
 
   function setFilterGroups(newGroups: FilterGroupByStat) {
@@ -544,7 +553,33 @@ export const useMainStore = defineStore('main', () => {
     filterGroups.value = createEmptyFilterGroups();
   }
 
+  function addCard(cardId: string) {
+    if (context.value === 'deck') {
+      addCardToCurrentDeck(cardId)
+    } else if (context.value === 'collection') {
+      addCardToCollection(cardId)
+    }
+  }
+
+  function removeCard(cardId: string) {
+    if (context.value === 'deck') {
+      removeCardFromCurrentDeck(cardId)
+    } else if (context.value === 'collection') {
+      removeCardFromCollection(cardId)
+    }
+  }
+
+  function getQuantity(cardId: string) {
+    if (context.value === 'deck') {
+      return getDeckQuantity(cardId)
+    } else if (context.value === 'collection') {
+      return getCollectionQuantity(cardId)
+    }
+    return 0;
+  }
+
   return {
+    context,
     loadData,
     collectionWithCards,
     addCardToCollection,
@@ -563,8 +598,11 @@ export const useMainStore = defineStore('main', () => {
     classifications,
     stories,
     setCurrentDeck,
+    addCard,
+    removeCard,
     addCardToCurrentDeck,
     removeCardFromCurrentDeck,
+    getQuantity,
     getDeckQuantity,
     filterGroups,
     setFilterGroups,

@@ -42,7 +42,7 @@ watch(() => props.cards, () => {
 
 const cardsWithQuantities = computed(() => {
     return props.cards.map(card => ({
-        quantity: store.getDeckQuantity(card.id),
+        quantity: store.getQuantity(card.id),
         card
     })).sort((a, b) => {
         if (props.sort === 'cost') {
