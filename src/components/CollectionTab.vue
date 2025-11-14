@@ -2,7 +2,7 @@
     <div class="collection-view">
         <PageHeader>Collection</PageHeader>
         <CardList class="collection-view__card-list" :cards="store.collectionWithCards.cards.map(entry => entry.data)"
-            sort="cost"></CardList>
+            sortBy="cost"></CardList>
         <button class="collection-view__add-cards" @click="showFilters = true">Add Cards</button>
         <Transition name="slide-left-right">
             <Filters v-if="showFilters" @close="showFilters = false"></Filters>

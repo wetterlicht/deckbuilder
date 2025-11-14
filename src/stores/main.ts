@@ -578,6 +578,16 @@ export const useMainStore = defineStore('main', () => {
     return 0;
   }
 
+  /**
+   * Sorting & Grouping
+   */
+  const deckGroupBy = ref('ink')
+  const deckSortBy = ref('cost');
+  const collectionSortBy = ref('cost');
+
+  /**
+   * End Sorting & Grouping
+   */
   return {
     context,
     loadData,
@@ -608,7 +618,10 @@ export const useMainStore = defineStore('main', () => {
     setFilterGroups,
     clearFilters,
     inkFilter,
-    rarityFilter
+    rarityFilter,
+    deckGroupBy,
+    deckSortBy,
+    collectionSortBy
   }
 })
 

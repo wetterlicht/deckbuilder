@@ -15,7 +15,8 @@
                 </div>
             </template>
         </PageHeader>
-        <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)" sort="cost"></CardList>
+        <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)" :groupBy="store.deckGroupBy"
+            :sortBy="store.deckSortBy"></CardList>
         <button class="deck-view__add-cards" @click="showFilters = true">Add Cards</button>
         <Transition name="slide-left-right">
             <Filters v-if="showFilters" @close="showFilters = false"></Filters>
