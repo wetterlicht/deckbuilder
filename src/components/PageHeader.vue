@@ -1,10 +1,15 @@
 <template>
     <div class="page-header">
-        <slot name="left"></slot>
-        <h1>
+        <div class="left">
+            <slot name="left"></slot>
+        </div>
+        <div class="center">
             <slot name="default"></slot>
-        </h1>
-        <slot name="right"></slot>
+            <slot name="center-bottom"></slot>
+        </div>
+        <div class="right">
+            <slot name="right"></slot>
+        </div>
     </div>
 
 </template>
@@ -19,16 +24,12 @@
     padding-block: 1rem;
     background-color: black;
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 2rem 1fr 2rem;
     align-items: center;
     position: relative;
-    min-height: 3.5rem;
 }
 
-h1 {
-    position: absolute;
-    left: 50%;
-    translate: -50%;
+.center {
     font-size: 1.125rem;
     line-height: 1.5;
     text-align: center;

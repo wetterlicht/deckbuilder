@@ -15,4 +15,8 @@ defineProps({
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.back-button {
+    display: block;
+}
+</style>

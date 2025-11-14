@@ -34,10 +34,6 @@ onActivated(() => {
     flex-direction: column;
 }
 
-.collection-view__card-list {
-    padding-bottom: 5.5rem;
-}
-
 .collection-view__add-cards {
     position: fixed;
     bottom: 5rem;

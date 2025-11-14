@@ -6,18 +6,27 @@
             </template>
             <template #default>
                 <div class="title">
+
+                    <div class="name">{{ deck.name }}</div>
+                </div>
+            </template>
+            <template #center-bottom>
+                <div class="header-bottom">
                     <div class="inks">
                         <img v-for="ink in deck.inks" :src="`/images/${ink.toLowerCase()}.svg`" :alt="ink">
                     </div>
-                    <div class="name">{{ deck.name }}</div>
-                </div>
-                <div class="deck-view__total_quantity">{{ totalQuantity }} {{ totalQuantity == 1 ? 'card' : 'cards' }}
+                    <div class="deck-view__total_quantity">{{ totalQuantity }} {{ totalQuantity == 1 ? 'card' : 'cards'
+                        }}
+                    </div>
                 </div>
             </template>
         </PageHeader>
         <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)" :groupBy="store.deckGroupBy"
             :sortBy="store.deckSortBy"></CardList>
-        <button class="deck-view__add-cards" @click="showFilters = true">Add Cards</button>
+        <div>
+            <button class="deck-view__add-cards" @click="showFilters = true">Add Cards</button>
+        </div>
+
         <Transition name="slide-left-right">
             <Filters v-if="showFilters" @close="showFilters = false"></Filters>
         </Transition>
@@ -64,10 +73,6 @@ const showFilters = ref(false);
     font-weight: normal;
 }
 
-.deck-view__card-list {
-    padding-bottom: 5.5rem;
-}
-
 .deck-view__add-cards {
     position: fixed;
     bottom: 5rem;
@@ -95,6 +100,13 @@ const showFilters = ref(false);
     img {
         height: 1.5rem;
     }
+}
+
+.header-bottom {
+    padding-top: 0.5rem;
+    display: flex;
+    column-gap: 1rem;
+    justify-content: center;
 }
 
 .card-details-dialog {

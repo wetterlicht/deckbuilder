@@ -254,10 +254,11 @@ function hideCardCarousel() {
     flex-grow: 1;
     overflow: hidden;
 
-    ul {
+    >ul {
         height: 100%;
         overflow: auto;
-        padding-block: 0.125rem;
+        padding-top: 0.125rem;
+        padding-bottom: 5.5rem;
     }
 }
 </style>
