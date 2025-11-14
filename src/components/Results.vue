@@ -8,7 +8,7 @@
                 Search Results
             </template>
         </PageHeader>
-        <CardList :cards="store.filteredCards"></CardList>
+        <CardList :cards="store.filteredCards" sortBy="cost"></CardList>
     </div>
 </template>
 
