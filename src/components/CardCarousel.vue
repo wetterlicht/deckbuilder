@@ -12,7 +12,30 @@
                         </div>
 
                     </div>
-                    <img :src="entry.card.images.full" :alt="entry.card.fullName">
+                    <input class="toggle" type="checkbox" v-model="showTextVersion">
+                    <div v-if="showTextVersion" class="text-version">
+                        <div>{{ entry.card.inks.join(", ") }}</div>
+                        <div>Cost: {{ entry.card.cost }}, {{ entry.card.inkwell ? 'Inkable' : 'Uninkable' }}</div>
+                        <div>
+                            {{ entry.card.types.join(' • ') }}<span v-if="entry.card.classifications?.length > 0"> -
+                            </span>{{
+                                entry.card.classifications?.join(' • ') }}
+                        </div>
+                        <div v-if="entry.card.strength !== undefined || entry.card.willpower !== undefined || entry.card.lore !== undefined"
+                            class="stats">
+                            <span v-if="entry.card.strength !== undefined">{{ entry.card.strength }} ¤</span> <span
+                                v-if="entry.card.willpower !== undefined">{{
+                                    entry.card.willpower }} ⛉</span> <span v-if="entry.card.lore !== undefined">{{
+                                    entry.card.lore }} ◊</span>
+                        </div>
+                        <div v-if="entry.card.gameplayText">
+                            {{ entry.card.gameplayText }}
+                        </div>
+                        <div class="flavor" v-if="entry.card.flavorText">
+                            {{ entry.card.flavorText }}
+                        </div>
+                    </div>
+                    <img v-else :src="entry.card.images.full" :alt="entry.card.fullName">
                     <div class="quantity">
                         <button @click="store.removeCard(entry.card.id)">
                             <div class="icon-remove"></div>
@@ -45,6 +68,8 @@ const index = defineModel<number>('index', { required: true });
 const emit = defineEmits(['close', 'loadMore'])
 
 const store = useMainStore();
+
+const showTextVersion = ref(false);
 
 const touchStartX = ref(0)
 const touchStartY = ref(0)
@@ -164,10 +189,64 @@ function prevCard() {
     }
 
     .card__title {
+        text-align: center;
+
         .card__name {
             font-size: 1.125rem;
+
         }
     }
+}
+
+.toggle {
+    appearance: none;
+    position: relative;
+    background: var(--c-gold);
+    border-radius: 16px;
+    border: 1px solid var(--c-gold);
+    width: 58px;
+    height: 32px;
+    box-sizing: content-box;
+    position: relative;
+    vertical-align: middle;
+    transition: background 0.25s;
+
+    &::before {
+        content: '';
+        display: block;
+        background-color: var(--c-indigo);
+        border: 1px solid var(--c-indigo);
+        border-radius: 50%;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+        width: 24px;
+        height: 24px;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        transition: left 0.25s;
+    }
+
+    &:checked {
+        &:before {
+            top: 4px;
+            left: 30px;
+        }
+    }
+}
+
+.text-version {
+    padding: 2rem;
+    display: grid;
+    row-gap: 1rem;
+}
+
+.flavor {
+    font-style: italic;
+}
+
+.stats {
+    display: flex;
+    column-gap: 1rem;
 }
 
 .quantity {
