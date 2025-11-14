@@ -68,6 +68,7 @@ export interface DeckDataWithCards {
 }
 
 export const stats = {
+    types: 'list',
     gameplayText: 'text',
     flavorText: 'text',
     cost: 'number',

@@ -20,6 +20,13 @@
             </details>
 
             <details>
+                <summary>Types</summary>
+                <ListFilterUI id="types" :filterGroup="store.filterGroups['types']" :options="store.types"
+                    :numberOfColumns="2" @update="(group: ListFilterGroup) => setFilterGroup('types', group)">
+                </ListFilterUI>
+            </details>
+
+            <details>
                 <summary>Gameplay Text</summary>
                 <TextFilterUI :filterGroup="store.filterGroups['gameplayText']"
                     @update="(group: TextFilterGroup) => setFilterGroup('gameplayText', group)">

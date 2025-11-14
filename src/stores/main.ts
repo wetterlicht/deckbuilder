@@ -253,6 +253,17 @@ export const useMainStore = defineStore('main', () => {
     return ['Amber', 'Amethyst', 'Emerald', 'Ruby', 'Sapphire', 'Steel'];
   })
 
+  const types = computed(() => {
+    const set = new Set<string>();
+    uniqueCards.value.forEach(card => {
+      card.types?.forEach(type => {
+        set.add(type)
+      })
+    })
+
+    return Array.from(set).sort();
+  })
+
   const inkFilter = ref({
     inks: [] as Array<string>,
     operator: "<="
@@ -583,7 +594,7 @@ export const useMainStore = defineStore('main', () => {
    */
   const deckGroupBy = ref<GroupBy>('type')
   const deckSortBy = ref<SortBy>('cost');
-  const collectionSortBy = ref<SortBy>('name');
+  const collectionSortBy = ref<SortBy>('cost');
 
   /**
    * End Sorting & Grouping
@@ -604,6 +615,7 @@ export const useMainStore = defineStore('main', () => {
     isSearching,
     filteredCards,
     inks,
+    types,
     rarities,
     classifications,
     stories,
