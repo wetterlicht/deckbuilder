@@ -102,6 +102,11 @@ const cardGroups = computed(() => {
 
         return acc;
     }, {} as Record<string, Array<{ quantity: number, card: CardData }>>)
+
+    Object.keys(records).forEach(key => {
+        records[key]?.sort(sortingFunction);
+    });
+
     return Object.entries(records).sort((a, b) => a[0].localeCompare(b[0]));
 })
 
@@ -142,26 +147,28 @@ const cardsWithQuantities = computed(() => {
     return props.cards.map(card => ({
         quantity: store.getQuantity(card.id),
         card
-    })).sort((a, b) => {
-        if (props.sortBy === 'cost') {
-            if (a.card.cost < b.card.cost) {
-                return -1;
-            }
-            if (a.card.cost > b.card.cost) {
-                return 1;
-            }
-        }
+    })).sort(sortingFunction)
+})
 
-        if (a.card.name < b.card.name) {
+function sortingFunction(a: { quantity: number, card: CardData }, b: { quantity: number, card: CardData }) {
+    if (props.sortBy === 'cost') {
+        if (a.card.cost < b.card.cost) {
             return -1;
         }
-        if (a.card.name > b.card.name) {
+        if (a.card.cost > b.card.cost) {
             return 1;
         }
+    }
 
-        return 0;
-    })
-})
+    if (a.card.name < b.card.name) {
+        return -1;
+    }
+    if (a.card.name > b.card.name) {
+        return 1;
+    }
+
+    return 0;
+}
 
 const cardsWithQuantitiesSlice = computed(() => {
     return cardsWithQuantities.value.slice(0, visibleCount.value)

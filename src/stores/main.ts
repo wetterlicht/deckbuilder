@@ -1,7 +1,7 @@
 import { computed, ref, type ComputedRef, type Ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
 import type { AppData, CardData, CollectionChange, CollectionDataWithCards, Context, DeckData, DeckDataWithCards, FilterGroupByStat, ListStat, NumberStat, SetData, TextStat } from '@/types';
-import { stats } from '@/types';
+import { type GroupBy, type SortBy, stats } from '@/types';
 import { v4 } from "uuid"
 
 const DB_NAME = 'lorcana-deckbuilder';
@@ -581,9 +581,9 @@ export const useMainStore = defineStore('main', () => {
   /**
    * Sorting & Grouping
    */
-  const deckGroupBy = ref('ink')
-  const deckSortBy = ref('cost');
-  const collectionSortBy = ref('cost');
+  const deckGroupBy = ref<GroupBy>('type')
+  const deckSortBy = ref<SortBy>('cost');
+  const collectionSortBy = ref<SortBy>('name');
 
   /**
    * End Sorting & Grouping
