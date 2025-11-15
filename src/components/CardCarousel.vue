@@ -20,8 +20,13 @@
                     </label>
 
                     <div v-if="showTextVersion" class="text-version">
-                        <div>{{ entry.card.inks.join(", ") }}</div>
-                        <div>Cost: {{ entry.card.cost }}, {{ entry.card.inkwell ? 'Inkable' : 'Uninkable' }}</div>
+                        <div class="text-version-row-1">
+                            <div class="cost" :class="{ inkable: entry.card.inkwell }">{{ entry.card.cost }}</div>
+                            <div class="inks">
+                                <img v-for="ink in entry.card.inks" :src="`/images/${ink.toLowerCase()}.svg`"
+                                    :alt="ink"></img>
+                            </div>
+                        </div>
                         <div>
                             {{ entry.card.types.join(' • ') }}<span v-if="entry.card.classifications?.length > 0"> -
                             </span>{{
@@ -41,7 +46,7 @@
                             {{ entry.card.flavorText }}
                         </div>
                     </div>
-                    <img v-else :src="entry.card.images.full" :alt="entry.card.fullName">
+                    <img class="card-image" v-else :src="entry.card.images.full" :alt="entry.card.fullName">
                     <div class="quantity">
                         <button @click="store.removeCard(entry.card.id)">
                             <div class="icon-remove"></div>
@@ -178,7 +183,6 @@ function prevCard() {
 }
 
 .card {
-
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -186,7 +190,7 @@ function prevCard() {
     color: white;
 
 
-    img {
+    .card-image {
         height: 55vh;
         aspect-ratio: 262/365;
         box-shadow: 0 4px 6px 1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
@@ -282,10 +286,48 @@ function prevCard() {
 
 
 .text-version {
-    padding: 2rem;
+    padding: 0.75rem;
     display: grid;
     row-gap: 1rem;
-    max-width: 60ch;
+    width: 263.3px;
+    min-height: 366.85px;
+    box-shadow: 0 4px 6px 1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+    border: 1px solid rgb(255 255 255 / 0.35);
+    border-radius: 0.5rem;
+}
+
+.text-version-row-1 {
+    display: flex;
+    column-gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cost {
+    width: 2.125rem;
+    aspect-ratio: 1;
+    background-position: center;
+    background-size: cover;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url("/images/inkcost.svg");
+}
+
+.inkable {
+    width: 2.5rem;
+    background-image: url("/images/inkwell.svg");
+}
+
+.inks {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+
+    img {
+        height: 2rem;
+    }
 }
 
 .flavor {
