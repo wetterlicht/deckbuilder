@@ -12,12 +12,8 @@
                         </div>
 
                     </div>
-                    <label class="toggle" for="text-version">
-                        <input id="text-version" type="checkbox" v-model="showTextVersion">
-                        <div class="knob"></div>
-                        <div class="image-icon"></div>
-                        <div class="text-icon"></div>
-                    </label>
+                    <Toggle checkboxId="text-version" onIcon="/images/text.svg" offIcon="/images/image.svg"
+                        v-model="showTextVersion"></Toggle>
 
                     <div v-if="showTextVersion" class="text-version">
                         <div class="text-version-row-1">
@@ -66,6 +62,7 @@
 import { useMainStore } from '@/stores/main';
 import type { CardData } from '@/types';
 import { computed, ref, TransitionGroup } from 'vue';
+import Toggle from './Toggle.vue';
 
 const props = defineProps({
     cardsWithQuantities: {
@@ -191,7 +188,7 @@ function prevCard() {
 
 
     .card-image {
-        height: 55vh;
+        height: 22.8125rem;
         aspect-ratio: 262/365;
         box-shadow: 0 4px 6px 1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
         border: 1px solid rgb(255 255 255 / 0.35);
@@ -207,82 +204,6 @@ function prevCard() {
         }
     }
 }
-
-.toggle {
-    position: relative;
-    background: var(--c-gold);
-    border-radius: 1rem;
-    border: 1px solid var(--c-gold);
-    width: 3.625rem;
-    height: 2rem;
-    box-sizing: content-box;
-    position: relative;
-    vertical-align: middle;
-    transition: background 0.25s;
-    cursor: pointer;
-
-    input {
-        appearance: none;
-    }
-
-    .knob {
-        display: block;
-        background-color: var(--c-indigo);
-        border: 1px solid var(--c-indigo);
-        border-radius: 50%;
-        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
-        width: 1.5rem;
-        height: 1.5rem;
-        position: absolute;
-        top: 0.25rem;
-        left: 0.25rem;
-        transition: left 0.25s;
-    }
-
-    input:checked+.knob {
-        top: 0.25rem;
-        left: 1.875rem;
-    }
-
-    .image-icon {
-        position: absolute;
-        width: 1rem;
-        height: 1rem;
-        background-color: var(--c-gold);
-        mask-repeat: no-repeat;
-        mask-image: url('/images/image.svg');
-        mask-size: cover;
-        mask-position: center;
-        top: 50%;
-        left: 0.5rem;
-        translate: 0 -50%;
-        transition: background-color 0.25s;
-    }
-
-    .text-icon {
-        position: absolute;
-        width: 1rem;
-        height: 1rem;
-        background-color: var(--c-indigo);
-        mask-repeat: no-repeat;
-        mask-image: url('/images/text.svg');
-        mask-size: cover;
-        mask-position: center;
-        top: 50%;
-        right: 0.5rem;
-        translate: 0 -50%;
-        transition: background-color 0.25s;
-    }
-
-    input:checked~.image-icon {
-        background-color: var(--c-indigo);
-    }
-
-    input:checked~.text-icon {
-        background-color: var(--c-gold);
-    }
-}
-
 
 
 .text-version {
