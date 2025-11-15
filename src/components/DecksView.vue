@@ -2,7 +2,7 @@
     <div class="decks-view">
         <PageHeader>Decks</PageHeader>
         <ul class="decks">
-            <DeckRow :deck="deck" v-for="deck in store.decksWithCards"></DeckRow>
+            <DeckRow :deck="deck" v-for="deck in store.decksWithCards.sort(sortByUpdatedAt)" :key="deck.id"></DeckRow>
         </ul>
         <div class="menu">
             <div v-if="isMenuOpen" class="menu-items">
@@ -37,6 +37,7 @@ import DeckRow from './DeckRow.vue';
 import { useMainStore } from '@/stores/main';
 import { ref } from 'vue';
 import router from '@/router';
+import type { DeckDataWithCards } from '@/types';
 
 const store = useMainStore()
 const isMenuOpen = ref<Boolean>(false);
@@ -60,6 +61,11 @@ function addNewDeck() {
     const id = store.addDeck(newDeckName.value);
     newDeckName.value = '';
     router.push({ name: 'deck', params: { id } })
+}
+
+function sortByUpdatedAt(a: DeckDataWithCards, b: DeckDataWithCards) {
+    console.log(a.updatedAt, b.updatedAt)
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
 }
 </script>
 

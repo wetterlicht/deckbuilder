@@ -88,6 +88,7 @@ export const useMainStore = defineStore('main', () => {
         cards: updatedCards,
         inks: deck.inks,
         usesCollectionTracking: true,
+        updatedAt: deck.updated_at
       });
     }
 
@@ -105,6 +106,7 @@ export const useMainStore = defineStore('main', () => {
         cards: updatedCards,
         inks: deck.inks,
         usesCollectionTracking: false,
+        updatedAt: deck.updated_at
       });
     }
 
@@ -136,9 +138,14 @@ export const useMainStore = defineStore('main', () => {
   async function loadData() {
     try {
       await loadAPIData();
+    } catch (error) {
+      console.error('Error loading api data:', error);
+    }
+
+    try {
       await loadUserData();
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading user data:', error);
     }
 
     syncCollectionFromServer().catch(error => console.error('Failed to sync collection from server:', error))
@@ -606,12 +613,25 @@ export const useMainStore = defineStore('main', () => {
     }
   }
 
+  function setCollectionTrackingForDeck(id: string, value: boolean) {
+    const index = decksData.value.findIndex(deck => deck.id === id);
+    if (index >= 0 && decksData.value[index]) {
+      decksData.value[index].updated_at = new Date().toISOString();
+      decksData.value[index].activated_collection_tracking_at = value ? new Date().toISOString() : undefined;
+      debouncedSaveDecks();
+    }
+  }
+
   function getDeckQuantity(cardId: string) {
     return currentDeck.value?.cards.find(card => card.id === cardId)?.quantity ?? 0;
   }
 
   function getCollectionQuantity(cardId: string) {
     return collectionWithCards.value?.cards.find(card => card.id === cardId)?.quantity ?? 0;
+  }
+
+  function getQuantityInCollectionForCurrentDeck(cardId: string) {
+    return decksWithCards.value.find(deck => deck.id === currentDeckId.value)?.cards.find(card => card.id === cardId)?.quantityInCollection ?? 0;
   }
 
   function setFilterGroups(newGroups: FilterGroupByStat) {
@@ -671,6 +691,7 @@ export const useMainStore = defineStore('main', () => {
     addDeck,
     deleteDeck,
     renameDeck,
+    setCollectionTrackingForDeck,
     currentDeck,
     currentDeckWithCards,
     searchTerm,
@@ -688,6 +709,7 @@ export const useMainStore = defineStore('main', () => {
     removeCardFromCurrentDeck,
     getQuantity,
     getDeckQuantity,
+    getQuantityInCollectionForCurrentDeck,
     filterGroups,
     setFilterGroups,
     clearFilters,

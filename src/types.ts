@@ -68,6 +68,7 @@ export interface DeckDataWithCards {
     }>,
     inks: Array<string>,
     usesCollectionTracking: boolean,
+    updatedAt: string,
 }
 
 export const stats = {

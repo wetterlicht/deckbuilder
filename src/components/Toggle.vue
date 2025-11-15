@@ -2,10 +2,10 @@
     <label class="toggle" :for="checkboxId">
         <input :id="checkboxId" type="checkbox" v-model="modelValue">
         <div class="knob"></div>
-        <div class="icon icon--off" :style="{
+        <div v-if="offIcon" class="icon icon--off" :style="{
             maskImage: `url(${offIcon})`,
         }"></div>
-        <div class="icon icon--on" :style="{
+        <div v-if="onIcon" class="icon icon--on" :style="{
             maskImage: `url(${onIcon})`,
         }"></div>
     </label>
@@ -21,11 +21,11 @@ const props = defineProps({
     },
     onIcon: {
         type: String,
-        required: true
+        default: ""
     },
     offIcon: {
         type: String,
-        required: true
+        default: ""
     }
 })
 </script>
@@ -40,9 +40,9 @@ const props = defineProps({
     height: 2rem;
     box-sizing: content-box;
     position: relative;
-    vertical-align: middle;
     transition: background 0.25s;
     cursor: pointer;
+    display: block;
 
     input {
         appearance: none;

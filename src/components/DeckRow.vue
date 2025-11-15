@@ -13,6 +13,13 @@
                 <h2>{{ deck.name }}</h2>
                 <button class="button button--edit" type="button" @click="showEditDeckDialog">Edit</button>
                 <button class="button button--delete" type="button" @click="showDeleteDeckDialog">Delete</button>
+                <div class="collection-toggle">
+                    <label :for="`collection-tracking-${deck.id}`">Use collection</label>
+                    <Toggle :checkboxId="`collection-tracking-${deck.id}`" :modelValue="deck.usesCollectionTracking"
+                        @update:modelValue="setCollectionTracking" onIcon="/images/collection.svg" offIcon="">
+                    </Toggle>
+
+                </div>
             </div>
         </dialog>
 
@@ -44,6 +51,7 @@ import { useMainStore } from '@/stores/main';
 import type { DeckDataWithCards } from '@/types';
 import { computed, ref, type PropType } from 'vue';
 import { RouterLink } from 'vue-router';
+import Toggle from './Toggle.vue';
 
 const props = defineProps({
     deck: {
@@ -79,10 +87,14 @@ function showDeleteDeckDialog() {
     deleteDeckDialog.value?.showModal();
 }
 
-
 function deleteDeck() {
     store.deleteDeck(props.deck.id);
     deleteDeckDialog.value?.close();
+}
+
+function setCollectionTracking(value: boolean) {
+    console.log("setCollectionTracking", props.deck.id)
+    store.setCollectionTrackingForDeck(props.deck.id, value);
 }
 
 const to = computed(() => {
@@ -184,6 +196,14 @@ const to = computed(() => {
             }
         }
     }
+}
+
+.collection-toggle {
+    display: flex;
+    align-items: center;
+    column-gap: 1rem;
+    font-weight: bold;
+    justify-content: space-between;
 }
 
 .edit-deck-dialog {

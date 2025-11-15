@@ -6,6 +6,7 @@
                 </GroupHeader>
                 <ul v-if="items" class="cards" :ref="el => setGroupRef(groupValue, el)">
                     <CardRow v-for="entry in items" :card="entry.card" :quantity="entry.quantity"
+                        :quantityInCollection="entry.quantityInCollection"
                         @selected="() => showCardCarousel(entry.card.id)">
                     </CardRow>
                 </ul>
@@ -13,7 +14,7 @@
         </ul>
         <ul @scroll="onScroll" v-else>
             <CardRow v-for="entry in cardsWithQuantitiesSlice" :card="entry.card" :quantity="entry.quantity"
-                @selected="() => showCardCarousel(entry.card.id)">
+                :quantityInCollection="entry.quantityInCollection" @selected="() => showCardCarousel(entry.card.id)">
             </CardRow>
         </ul>
         <Transition name="slide-up-down">
@@ -66,6 +67,7 @@ function setGroupRef(groupName: string, el: Element | ComponentPublicInstance | 
 const cardGroups = computed(() => {
     const records = props.cards.map(card => ({
         quantity: store.getQuantity(card.id),
+        quantityInCollection: store.context === 'deck' ? store.getQuantityInCollectionForCurrentDeck(card.id) : undefined,
         card
     })).reduce((acc, cur) => {
         if (props.groupBy === 'type') {
@@ -101,7 +103,7 @@ const cardGroups = computed(() => {
         }
 
         return acc;
-    }, {} as Record<string, Array<{ quantity: number, card: CardData }>>)
+    }, {} as Record<string, Array<{ quantity: number, quantityInCollection?: number, card: CardData }>>)
 
     Object.keys(records).forEach(key => {
         records[key]?.sort(sortingFunction);
@@ -146,6 +148,7 @@ const cardGroupsSliced = computed(() => {
 const cardsWithQuantities = computed(() => {
     return props.cards.map(card => ({
         quantity: store.getQuantity(card.id),
+        quantityInCollection: store.context === 'deck' ? store.getQuantityInCollectionForCurrentDeck(card.id) : undefined,
         card
     })).sort(sortingFunction)
 })

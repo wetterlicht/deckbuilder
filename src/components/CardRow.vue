@@ -13,16 +13,24 @@
             </div>
         </div>
         <div class="card-row__quantity">
-            <template v-if="quantity > 0">
-                <button @click="store.removeCard(card.id)">
-                    <div class="icon-remove"></div>
+            <div class="card-row__quantity-counter">
+                <template v-if="quantity > 0">
+                    <button @click="store.removeCard(card.id)">
+                        <div class="icon-remove"></div>
+                    </button>
+                    <div>{{ quantity }}</div>
+                </template>
+                <button @click="store.addCard(card.id)">
+                    <div class="icon-add"></div>
                 </button>
-                <div>{{ quantity }}</div>
-            </template>
-            <button @click="store.addCard(card.id)">
-                <div class="icon-add"></div>
-            </button>
+            </div>
+
+            <div class="card-row__collection_quantity"
+                v-if="quantityInCollection !== undefined && quantityInCollection < quantity">
+                {{ quantityInCollection }}
+            </div>
         </div>
+
     </li>
 </template>
 
@@ -39,6 +47,9 @@ const props = defineProps({
     quantity: {
         type: Number,
         required: true
+    },
+    quantityInCollection: {
+        type: Number,
     }
 })
 
@@ -156,23 +167,50 @@ const store = useMainStore();
 }
 
 .card-row__quantity {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    column-gap: 0.5rem;
-    min-width: 90px;
-
-    button {
-        font-size: 1.75rem;
-        padding: 0;
-        width: 2rem;
-        aspect-ratio: 1;
-        color: white;
-        background: transparent;
-        border: none;
-        display: grid;
-        justify-content: center;
+    .card-row__quantity-counter {
+        display: flex;
+        justify-content: flex-end;
         align-items: center;
+        column-gap: 0.5rem;
+        min-width: 90px;
+
+        button {
+            font-size: 1.75rem;
+            padding: 0;
+            width: 2rem;
+            aspect-ratio: 1;
+            color: white;
+            background: transparent;
+            border: none;
+            display: grid;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    .card-row__collection_quantity {
+        display: flex;
+        align-items: center;
+        text-align: right;
+        font-size: 0.75rem;
+        column-gap: 0.25rem;
+        width: fit-content;
+        margin-left: auto;
+        background-color: hsla(60, 4%, 50%, 0.5);
+        padding: 0.125rem 0.5rem;
+        border-radius: 100vh;
+
+        &::after {
+            content: '';
+            display: block;
+            height: 1rem;
+            width: 1rem;
+            background-color: currentColor;
+            mask-repeat: no-repeat;
+            mask-image: url('/images/collection.svg');
+            mask-size: cover;
+            mask-position: center;
+        }
     }
 }
 
