@@ -53,7 +53,8 @@ export interface DeckData {
     }>
     updated_at: string,
     updated_by_client_id: string,
-    deleted_at?: string
+    deleted_at?: string,
+    activated_collection_tracking_at?: string,
 }
 
 export interface DeckDataWithCards {
@@ -62,9 +63,11 @@ export interface DeckDataWithCards {
     cards: Array<{
         id: string,
         quantity: number,
-        data: CardData
+        data: CardData,
+        quantityInCollection: number,
     }>,
-    inks: Array<string>
+    inks: Array<string>,
+    usesCollectionTracking: boolean,
 }
 
 export const stats = {

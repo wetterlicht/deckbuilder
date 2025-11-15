@@ -25,34 +25,96 @@ export const useMainStore = defineStore('main', () => {
   // Decks
   const decksData: Ref<Array<DeckData>> = ref([]);
   const decksWithCards: ComputedRef<Array<DeckDataWithCards>> = computed(() => {
-    return decksData.value.filter(deck => !deck.deleted_at).map(deckData => {
-      const cards: Array<{
-        id: string,
-        quantity: number,
-        data: CardData
-      }> = deckData.cards.map(cardEntry => {
+    const collectionMap = collectionWithCards.value.cards.reduce((acc, card) => {
+      acc[card.id] = card.quantity;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const baseDecks = decksData.value
+      .filter(deck => !deck.deleted_at)
+      .map(deckData => {
+        const cards = deckData.cards
+          .map(cardEntry => ({
+            id: cardEntry.id,
+            quantity: cardEntry.quantity,
+            data: getCardById(cardEntry.id)
+          }))
+          .filter((card): card is { id: string; quantity: number; data: CardData } =>
+            card.data !== undefined
+          );
+
+        const inks = Array.from(
+          cards.reduce((acc, cur) => {
+            cur.data.inks.forEach(i => acc.add(i));
+            return acc;
+          }, new Set<string>())
+        ).sort();
+
         return {
-          ...cardEntry,
-          data: getCardById(cardEntry.id)
-        }
-      }).filter((card): card is { id: string, quantity: number; data: CardData } => card.data !== undefined)
+          ...deckData,
+          cards,
+          inks,
+        };
+      });
 
-      const inks = Array.from(cards.reduce((acc, cur) => {
-        cur.data.inks.forEach(ink => acc.add(ink))
-        return acc;
-      }, new Set<string>())).sort();
+    const trackingDecks = baseDecks
+      .filter(deck => !!deck.activated_collection_tracking_at)
+      .sort(
+        (a, b) =>
+          new Date(a.activated_collection_tracking_at!).getTime() -
+          new Date(b.activated_collection_tracking_at!).getTime()
+      );
 
-      return {
-        ...deckData, cards, inks
-      }
-    })
+    const nonTrackingDecks = baseDecks.filter(
+      deck => !deck.activated_collection_tracking_at
+    );
+
+    const result: Array<DeckDataWithCards> = [];
+
+    for (const deck of trackingDecks) {
+      const updatedCards = deck.cards.map(card => {
+        const available = collectionMap[card.id] ?? 0;
+        const quantityInCollection = Math.min(card.quantity, available);
+        collectionMap[card.id] = available - quantityInCollection;
+        return {
+          ...card,
+          quantityInCollection,
+        };
+      });
+
+      result.push({
+        id: deck.id,
+        name: deck.name,
+        cards: updatedCards,
+        inks: deck.inks,
+        usesCollectionTracking: true,
+      });
+    }
+
+    for (const deck of nonTrackingDecks) {
+      const updatedCards = deck.cards.map(card => {
+        return {
+          ...card,
+          quantityInCollection: collectionMap[card.id] ?? 0,
+        };
+      });
+
+      result.push({
+        id: deck.id,
+        name: deck.name,
+        cards: updatedCards,
+        inks: deck.inks,
+        usesCollectionTracking: false,
+      });
+    }
+
+    return result;
   });
 
   // Collection
   const collectionChanges: Ref<Array<CollectionChange>> = ref([]);
 
   const collectionWithCards: ComputedRef<CollectionDataWithCards> = computed(() => {
-    console.log("collectionWithCards")
     const quantities = collectionChanges.value.reduce((acc, cur) => {
       acc[cur.cardId] = (acc[cur.cardId] ?? 0) + cur.change
       return acc;
