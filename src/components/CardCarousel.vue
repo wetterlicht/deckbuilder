@@ -12,7 +12,13 @@
                         </div>
 
                     </div>
-                    <input class="toggle" type="checkbox" v-model="showTextVersion">
+                    <label class="toggle" for="text-version">
+                        <input id="text-version" type="checkbox" v-model="showTextVersion">
+                        <div class="knob"></div>
+                        <div class="image-icon"></div>
+                        <div class="text-icon"></div>
+                    </label>
+
                     <div v-if="showTextVersion" class="text-version">
                         <div>{{ entry.card.inks.join(", ") }}</div>
                         <div>Cost: {{ entry.card.cost }}, {{ entry.card.inkwell ? 'Inkable' : 'Uninkable' }}</div>
@@ -199,45 +205,87 @@ function prevCard() {
 }
 
 .toggle {
-    appearance: none;
     position: relative;
     background: var(--c-gold);
-    border-radius: 16px;
+    border-radius: 1rem;
     border: 1px solid var(--c-gold);
-    width: 58px;
-    height: 32px;
+    width: 3.625rem;
+    height: 2rem;
     box-sizing: content-box;
     position: relative;
     vertical-align: middle;
     transition: background 0.25s;
+    cursor: pointer;
 
-    &::before {
-        content: '';
+    input {
+        appearance: none;
+    }
+
+    .knob {
         display: block;
         background-color: var(--c-indigo);
         border: 1px solid var(--c-indigo);
         border-radius: 50%;
         box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
-        width: 24px;
-        height: 24px;
+        width: 1.5rem;
+        height: 1.5rem;
         position: absolute;
-        top: 4px;
-        left: 4px;
+        top: 0.25rem;
+        left: 0.25rem;
         transition: left 0.25s;
     }
 
-    &:checked {
-        &:before {
-            top: 4px;
-            left: 30px;
-        }
+    input:checked+.knob {
+        top: 0.25rem;
+        left: 1.875rem;
+    }
+
+    .image-icon {
+        position: absolute;
+        width: 1rem;
+        height: 1rem;
+        background-color: var(--c-gold);
+        mask-repeat: no-repeat;
+        mask-image: url('/images/image.svg');
+        mask-size: cover;
+        mask-position: center;
+        top: 50%;
+        left: 0.5rem;
+        translate: 0 -50%;
+        transition: background-color 0.25s;
+    }
+
+    .text-icon {
+        position: absolute;
+        width: 1rem;
+        height: 1rem;
+        background-color: var(--c-indigo);
+        mask-repeat: no-repeat;
+        mask-image: url('/images/text.svg');
+        mask-size: cover;
+        mask-position: center;
+        top: 50%;
+        right: 0.5rem;
+        translate: 0 -50%;
+        transition: background-color 0.25s;
+    }
+
+    input:checked~.image-icon {
+        background-color: var(--c-indigo);
+    }
+
+    input:checked~.text-icon {
+        background-color: var(--c-gold);
     }
 }
+
+
 
 .text-version {
     padding: 2rem;
     display: grid;
     row-gap: 1rem;
+    max-width: 60ch;
 }
 
 .flavor {
