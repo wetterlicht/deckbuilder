@@ -16,7 +16,7 @@
                         <img v-for="ink in deck.inks" :src="`/images/${ink.toLowerCase()}.svg`" :alt="ink">
                     </div>
                     <div class="deck-view__total_quantity">{{ totalQuantity }} {{ totalQuantity == 1 ? 'card' : 'cards'
-                    }}
+                        }}
                     </div>
                 </div>
                 <div class="tabs">
@@ -65,6 +65,9 @@ const currentTab = ref<string>(tabs[0]!);
 
 onActivated(() => {
     store.context = 'deck'
+    if (store.currentDeck?.id !== route.params.id) {
+        currentTab.value = tabs[0]!
+    }
     store.setCurrentDeck(route.params.id as string)
 })
 
