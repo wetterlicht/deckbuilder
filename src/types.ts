@@ -158,4 +158,4 @@ export type FilterGroupByStat = {
 export type Context = 'collection' | 'deck'
 
 export type GroupBy = 'type' | 'cost' | 'ink' | 'rarity' | ''
-export type SortBy = 'name' | 'cost' | ''
+export type SortBy = 'name' | 'cost' | 'ink' | ''

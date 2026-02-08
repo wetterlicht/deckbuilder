@@ -1,6 +1,6 @@
 <template>
     <div class="deck-view" v-if="deck">
-        <PageHeader>
+        <PageHeader class="page-header--deck">
             <template #left>
                 <BackButton :to="{ name: 'decks' }"></BackButton>
             </template>
@@ -19,13 +19,23 @@
                     }}
                     </div>
                 </div>
+                <div class="tabs">
+                    <button v-for="tab in tabs" :data-tab="tab" :class="{ 'button--active': currentTab == tab }"
+                        @click="currentTab = tab" aria-label="Decklist"></button>
+                </div>
             </template>
         </PageHeader>
-        <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)" :groupBy="store.deckGroupBy"
-            :sortBy="store.deckSortBy"></CardList>
-        <div>
-            <button class="deck-view__add-cards" @click="showFilters = true">Add Cards</button>
+        <div v-if="currentTab == 'decklist'">
+            <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)"
+                :groupBy="store.deckGroupBy" :sortBy="store.deckSortBy"></CardList>
+            <div>
+                <button class="deck-view__add-cards" @click="showFilters = true">Add Cards</button>
+            </div>
         </div>
+        <div v-else-if="currentTab === 'statistics'" class="tab--statistics">
+            <Statistics :deck="deck"></Statistics>
+        </div>
+
 
         <Transition name="slide-left-right">
             <Filters v-if="showFilters" @close="showFilters = false"></Filters>
@@ -37,14 +47,21 @@
 import { useMainStore } from '@/stores/main';
 
 import { useRoute } from 'vue-router';
-import { computed, onActivated, ref } from 'vue';
+import {
+    computed, onActivated, ref
+} from 'vue';
 import BackButton from './BackButton.vue';
 import PageHeader from './PageHeader.vue';
 import CardList from './CardList.vue';
 import Filters from './Filters.vue';
+import Statistics from './Statistics.vue';
 
 const store = useMainStore();
 const route = useRoute();
+
+
+const tabs = ['decklist', 'statistics']
+const currentTab = ref<string>(tabs[0]!);
 
 onActivated(() => {
     store.context = 'deck'
@@ -86,6 +103,10 @@ const showFilters = ref(false);
     box-shadow: 0 4px 6px 1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
 }
 
+.page-header--deck {
+    padding-bottom: 0;
+}
+
 .title {
     display: flex;
     justify-content: center;
@@ -107,6 +128,50 @@ const showFilters = ref(false);
     display: flex;
     column-gap: 1rem;
     justify-content: center;
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+
+    --c-button-icon: hsl(0, 0%, 50%);
+
+    button {
+        background: none;
+        border-radius: 0;
+        padding: 0;
+        border: none;
+        color: var(--c-button-icon);
+
+        &.button--active {
+            --c-button-icon: hsl(0, 0%, 100%);
+        }
+
+        &::after {
+            content: '';
+            display: block;
+            height: 1.5rem;
+            width: 1.5rem;
+            background-color: currentColor;
+            mask-repeat: no-repeat;
+            mask-size: cover;
+            mask-position: center;
+        }
+    }
+
+    [data-tab='decklist']::after {
+        mask-image: url('/images/cards.svg');
+    }
+
+    [data-tab='statistics']::after {
+        mask-image: url('/images/stats.svg');
+    }
+}
+
+.tab--statistics {
+    overflow: auto;
 }
 
 .card-details-dialog {

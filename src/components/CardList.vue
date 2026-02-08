@@ -163,6 +163,15 @@ function sortingFunction(a: { quantity: number, card: CardData }, b: { quantity:
         }
     }
 
+    if (props.sortBy === 'ink') {
+        if (a.card.inks.join(",") < b.card.inks.join(",")) {
+            return -1;
+        }
+        if (a.card.inks.join(",") > b.card.inks.join(",")) {
+            return 1;
+        }
+    }
+
     if (a.card.name < b.card.name) {
         return -1;
     }
