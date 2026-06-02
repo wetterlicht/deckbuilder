@@ -16,7 +16,7 @@
                         <img v-for="ink in deck.inks" :src="`/images/${ink.toLowerCase()}.svg`" :alt="ink">
                     </div>
                     <div class="deck-view__total_quantity">{{ totalQuantity }} {{ totalQuantity == 1 ? 'card' : 'cards'
-                        }}
+                    }}
                     </div>
                 </div>
                 <div class="tabs">
@@ -25,14 +25,14 @@
                 </div>
             </template>
         </PageHeader>
-        <div v-if="currentTab == 'decklist'">
+        <div v-if="currentTab == 'decklist'" class="tab tab--decklist">
             <CardList class="deck-view__card-list" :cards="deck.cards.map(entry => entry.data)"
                 :groupBy="store.deckGroupBy" :sortBy="store.deckSortBy"></CardList>
             <div>
                 <button class="deck-view__add-cards" @click="showFilters = true">Add Cards</button>
             </div>
         </div>
-        <div v-else-if="currentTab === 'statistics'" class="tab--statistics">
+        <div v-else-if="currentTab === 'statistics'" class="tab tab--statistics">
             <Statistics :deck="deck"></Statistics>
         </div>
 
@@ -173,7 +173,7 @@ const showFilters = ref(false);
     }
 }
 
-.tab--statistics {
+.tab {
     overflow: auto;
 }
 
