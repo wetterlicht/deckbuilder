@@ -8,11 +8,12 @@
                 Search Results
             </template>
         </PageHeader>
-        <CardList :cards="store.filteredCards" sortBy="cost"></CardList>
+        <CardGrid :cards="store.filteredCards" sortBy="cost"></CardGrid>
     </div>
 </template>
 
 <script setup lang="ts">
+import CardGrid from './CardGrid.vue';
 import CardList from './CardList.vue';
 import PageHeader from './PageHeader.vue';
 import { useMainStore } from '@/stores/main';

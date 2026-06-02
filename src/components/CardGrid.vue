@@ -1,5 +1,5 @@
 <template>
-    <div class="card-list">
+    <div class="card-grid">
         <ul @scroll="onGroupsScroll" v-if="groupBy">
             <li v-for="[groupValue, items] in cardGroupsSliced">
                 <GroupHeader :groupBy="groupBy" :groupValue="groupValue" :count="getGroupCount(groupValue)">
@@ -12,10 +12,10 @@
                 </ul>
             </li>
         </ul>
-        <ul @scroll="onScroll" v-else>
-            <CardRow v-for="entry in cardsWithQuantitiesSlice" :card="entry.card" :quantity="entry.quantity"
+        <ul v-else @scroll="onScroll" class="cards">
+            <GridCard v-for="entry in cardsWithQuantitiesSlice" :card="entry.card" :quantity="entry.quantity"
                 :quantityInCollection="entry.quantityInCollection" @selected="() => showCardCarousel(entry.card.id)">
-            </CardRow>
+            </GridCard>
         </ul>
         <Transition name="slide-up-down">
             <CardCarousel v-if="isCarouselActive" :cardsWithQuantities="carouselCardsWithQuantites"
@@ -32,6 +32,7 @@ import { computed, nextTick, onMounted, ref, watch, type ComponentPublicInstance
 import { useMainStore } from '@/stores/main';
 import CardCarousel from './CardCarousel.vue';
 import GroupHeader from './GroupHeader.vue';
+import GridCard from './GridCard.vue';
 
 const props = defineProps({
     cards: {
@@ -262,7 +263,7 @@ function hideCardCarousel() {
 </script>
 
 <style scoped>
-.card-list {
+.card-grid {
     overflow: hidden;
 
     >ul {
@@ -271,5 +272,11 @@ function hideCardCarousel() {
         padding-top: 0.125rem;
         padding-bottom: 5.5rem;
     }
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 0.5rem;
 }
 </style>
