@@ -188,18 +188,29 @@ const inkabilitySlices = computed(() => {
         if (count === 0) continue
 
         const angle = (count / totalInkabilityCards.value) * 360
-        const endAngle = startAngle + angle
+        let d = ''
 
-        const start = polarToCartesian(cx, cy, r, startAngle)
-        const end = polarToCartesian(cx, cy, r, endAngle)
-        const largeArc = angle > 180 ? 1 : 0
+        if (angle >= 360) {
+            d = [
+                `M ${cx} ${cy - r}`,
+                `A ${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r}`,
+                'Z'
+            ].join(' ')
+        } else {
+            const endAngle = startAngle + angle
+            const start = polarToCartesian(cx, cy, r, startAngle)
+            const end = polarToCartesian(cx, cy, r, endAngle)
+            const largeArc = angle > 180 ? 1 : 0
 
-        const d = [
-            `M ${cx} ${cy}`,
-            `L ${start.x} ${start.y}`,
-            `A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`,
-            'Z'
-        ].join(' ')
+            d = [
+                `M ${cx} ${cy}`,
+                `L ${start.x} ${start.y}`,
+                `A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`,
+                'Z'
+            ].join(' ')
+
+            startAngle = endAngle
+        }
 
         slices.push({
             label,
@@ -207,8 +218,6 @@ const inkabilitySlices = computed(() => {
             d,
             color: inkabilityColors[label]
         })
-
-        startAngle = endAngle
     }
 
     return slices
