@@ -40,7 +40,7 @@ const props = defineProps({
 const emit = defineEmits(['selected']);
 
 const image = computed(() => {
-    return props.card.images.full
+    return props.card.images.small
 });
 
 const imageClass = computed(() => {
@@ -63,6 +63,7 @@ const store = useMainStore();
 .grid-card__image {
     font-size: 1.25rem;
     width: 100%;
+    aspect-ratio: 262/365;
     flex-shrink: 0;
     overflow: hidden;
     box-shadow: 0 4px 6px 1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);

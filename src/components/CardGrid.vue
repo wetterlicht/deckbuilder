@@ -49,7 +49,7 @@ const props = defineProps({
     }
 })
 
-const VISIBLE_STEP = 20;
+const VISIBLE_STEP = 27;
 const visibleCount = ref(VISIBLE_STEP);
 const groupVisibleCount = ref<Record<string, number>>({});
 
