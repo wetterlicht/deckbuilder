@@ -369,6 +369,17 @@ export const useMainStore = defineStore('main', () => {
     return Array.from(set).sort();
   })
 
+  const setNames = computed(() => {
+    const set = new Set<string>();
+    cards.value.forEach(card => {
+      if (card.setName) {
+        set.add(card.setName)
+      }
+    })
+
+    return Array.from(set).sort();
+  })
+
   function getCardById(id: string): CardData | undefined {
     const card = cards.value.find(card => card.id === id);
     return card;
@@ -702,6 +713,7 @@ export const useMainStore = defineStore('main', () => {
     rarities,
     classifications,
     stories,
+    setNames,
     setCurrentDeck,
     addCard,
     removeCard,
@@ -745,7 +757,8 @@ function adaptApiData(apiData: any): AppData {
         full: apiCardData.images.full,
         small: apiCardData.images.thumbnail
       },
-      isPrimaryVersion: apiCardData.baseId == undefined && apiCardData.reprintOfId == undefined
+      isPrimaryVersion: apiCardData.baseId == undefined && apiCardData.reprintOfId == undefined,
+      setName: apiData.sets[apiCardData.setCode].name
     }
     return card;
   })

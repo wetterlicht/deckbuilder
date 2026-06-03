@@ -26,6 +26,7 @@ export interface CardData {
         small: string
     }
     isPrimaryVersion: boolean,
+    setName: string,
 }
 
 export interface SetData { }
@@ -81,7 +82,8 @@ export const stats = {
     willpower: 'number',
     moveCost: 'number',
     classifications: 'list',
-    story: 'list'
+    story: 'list',
+    setName: 'list',
 } as const;
 
 export type NumberStat = {

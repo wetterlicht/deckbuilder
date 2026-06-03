@@ -87,6 +87,13 @@
             </details>
 
             <details>
+                <summary>Set</summary>
+                <ListFilterUI id="set-names" :filterGroup="store.filterGroups['setName']" :options="store.setNames"
+                    :numberOfColumns="1" @update="(group: ListFilterGroup) => setFilterGroup('setName', group)">
+                </ListFilterUI>
+            </details>
+
+            <details>
                 <summary>Flavor Text</summary>
                 <TextFilterUI :filterGroup="store.filterGroups['flavorText']"
                     @update="(group: TextFilterGroup) => setFilterGroup('flavorText', group)">
