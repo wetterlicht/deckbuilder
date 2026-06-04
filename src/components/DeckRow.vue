@@ -13,6 +13,8 @@
                 <h2>{{ deck.name }}</h2>
                 <button class="button button--edit" type="button" @click="showEditDeckDialog">Edit</button>
                 <button class="button button--delete" type="button" @click="showDeleteDeckDialog">Delete</button>
+                <button class="button button--copy-to-clipboard" type="button" @click="copyToClipboard">Copy to
+                    Clipboard</button>
                 <div class="collection-toggle">
                     <label :for="`collection-tracking-${deck.id}`">Use collection</label>
                     <Toggle :checkboxId="`collection-tracking-${deck.id}`" :modelValue="deck.usesCollectionTracking"
@@ -93,7 +95,6 @@ function deleteDeck() {
 }
 
 function setCollectionTracking(value: boolean) {
-    console.log("setCollectionTracking", props.deck.id)
     store.setCollectionTrackingForDeck(props.deck.id, value);
 }
 
@@ -103,6 +104,14 @@ const to = computed(() => {
         params: { id: props.deck.id }
     }
 })
+
+function copyToClipboard() {
+    let decklist = "";
+    props.deck.cards.forEach(entry => {
+        decklist += `${entry.quantity} ${entry.data.fullName}\n`;
+    })
+    navigator.clipboard.writeText(decklist)
+}
 </script>
 
 <style scoped>
@@ -193,6 +202,10 @@ const to = computed(() => {
 
             &.button--delete::before {
                 mask-image: url('/images/trash.svg');
+            }
+
+            &.button--copy-to-clipboard::before {
+                mask-image: url('/images/clipboard.svg');
             }
         }
     }
