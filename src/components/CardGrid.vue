@@ -4,19 +4,25 @@
             <li v-for="[groupValue, items] in cardGroupsSliced">
                 <GroupHeader :groupBy="groupBy" :groupValue="groupValue" :count="getGroupCount(groupValue)">
                 </GroupHeader>
-                <ul v-if="items" class="cards" :ref="el => setGroupRef(groupValue, el)">
-                    <CardRow v-for="entry in items" :card="entry.card" :quantity="entry.quantity"
-                        :quantityInCollection="entry.quantityInCollection"
-                        @selected="() => showCardCarousel(entry.card.id)">
-                    </CardRow>
-                </ul>
+                <div v-if="items" class="cards-wrapper">
+                    <ul class="cards" :ref="el => setGroupRef(groupValue, el)">
+                        <CardRow v-for="entry in items" :card="entry.card" :quantity="entry.quantity"
+                            :quantityInCollection="entry.quantityInCollection"
+                            @selected="() => showCardCarousel(entry.card.id)">
+                        </CardRow>
+                    </ul>
+                </div>
             </li>
         </ul>
-        <ul v-else @scroll="onScroll" class="cards">
-            <GridCard v-for="entry in cardsWithQuantitiesSlice" :card="entry.card" :quantity="entry.quantity"
-                :quantityInCollection="entry.quantityInCollection" @selected="() => showCardCarousel(entry.card.id)">
-            </GridCard>
-        </ul>
+        <div v-else class="cards-wrapper">
+            <ul @scroll="onScroll" class="cards">
+                <GridCard v-for="entry in cardsWithQuantitiesSlice" :card="entry.card" :quantity="entry.quantity"
+                    :quantityInCollection="entry.quantityInCollection"
+                    @selected="() => showCardCarousel(entry.card.id)">
+                </GridCard>
+            </ul>
+        </div>
+
         <Transition name="slide-up-down">
             <CardCarousel v-if="isCarouselActive" :cardsWithQuantities="carouselCardsWithQuantites"
                 v-model:index="carouselIndex" @close="hideCardCarousel">
@@ -265,18 +271,30 @@ function hideCardCarousel() {
 <style scoped>
 .card-grid {
     overflow: hidden;
+}
 
-    >ul {
-        height: 100%;
-        overflow: auto;
-        padding-top: 0.125rem;
-        padding-bottom: 5.5rem;
-    }
+.cards-wrapper {
+    --card-width: 262px;
+    --column-gap: 0.5rem;
+
+    container-type: inline-size;
+
+    overflow: auto;
+    height: 100%;
+    padding-top: 0.125rem;
+    padding-bottom: 5.5rem;
 }
 
 .cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    row-gap: 0.5rem;
+    grid-template-columns: repeat(3, minmax(100px, var(--card-width)));
+    gap: var(--column-gap);
+    justify-content: center;
+}
+
+@container (width >=766px) {
+    .cards {
+        grid-template-columns: repeat(auto-fit, var(--card-width));
+    }
 }
 </style>
