@@ -78,7 +78,7 @@ function sortByUpdatedAt(a: DeckDataWithCards, b: DeckDataWithCards) {
 }
 
 .decks {
-    padding: 1rem;
+    padding: 1rem 1rem 6rem 1rem;
     overflow: auto;
     flex-grow: 1;
 }
