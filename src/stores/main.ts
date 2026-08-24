@@ -607,10 +607,10 @@ export const useMainStore = defineStore('main', () => {
   }
 
   function renameDeck(id: string, name: string) {
-    const index = decksWithCards.value.findIndex(deck => deck.id === id);
-    if (index >= 0 && decksData.value[index]) {
-      decksData.value[index].name = name
-      decksData.value[index].updated_at = new Date().toISOString();
+    const deck = decksData.value.find(deck => deck.id === id);
+    if (deck) {
+      deck.name = name
+      deck.updated_at = new Date().toISOString();
       debouncedSaveDecks();
     }
   }
