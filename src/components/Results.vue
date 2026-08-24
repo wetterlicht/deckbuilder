@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 import CardGrid from './CardGrid.vue';
-import CardList from './CardList.vue';
 import PageHeader from './PageHeader.vue';
 import { useMainStore } from '@/stores/main';
 
