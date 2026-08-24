@@ -1,5 +1,7 @@
 <template>
     <div class="card-carousel" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+        <button class="close-button" aria-label="Close" @click="emit('close')"><span
+                class="close-button__icon"></span></button>
         <TransitionGroup tag="div" class="track" name="list">
             <div class="entry" v-for="entry in loadedCards" :key="entry.key">
                 <div class="card" v-if="entry.card">
@@ -154,7 +156,7 @@ function prevCard() {
 
 <style scoped>
 .card-carousel {
-    position: absolute;
+    position: fixed;
     z-index: 1;
     top: 0;
     left: 0;
@@ -163,6 +165,33 @@ function prevCard() {
     background-color: var(--c-kelp);
     color: white;
     overflow: hidden;
+}
+
+.close-button {
+    z-index: 1;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    padding: 0.25rem;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+
+    .close-button__icon {
+        width: 1.5rem;
+        aspect-ratio: 1;
+        color: white;
+        background-color: currentColor;
+        mask-repeat: no-repeat;
+        mask-image: url('/images/close.svg');
+        mask-size: cover;
+        mask-position: center;
+    }
+
 }
 
 .track {
@@ -316,11 +345,11 @@ function prevCard() {
 }
 
 .list-enter-from {
-    transform: translateX(100dvh);
+    transform: translateX(100dvw);
 }
 
 .list-leave-to {
-    transform: translateX(-100dvh);
+    transform: translateX(-100dvw);
 }
 
 .list-leave-active {
