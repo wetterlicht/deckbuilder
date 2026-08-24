@@ -64,7 +64,6 @@ function addNewDeck() {
 }
 
 function sortByUpdatedAt(a: DeckDataWithCards, b: DeckDataWithCards) {
-    console.log(a.updatedAt, b.updatedAt)
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
 }
 </script>
