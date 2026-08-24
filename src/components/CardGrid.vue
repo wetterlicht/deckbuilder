@@ -251,7 +251,7 @@ function hideCardCarousel() {
     isCarouselActive.value = false
 
     nextTick(() => {
-        const listEl = document.querySelector('.card-list')
+        const listEl = document.querySelector('.card-grid')
         const cardEl = listEl?.querySelectorAll('.card-row')?.[carouselIndex.value]
         if (cardEl && cardEl instanceof HTMLElement) {
             cardEl.scrollIntoView({ behavior: 'auto', block: 'center' })
