@@ -75,7 +75,7 @@ const props = defineProps({
 
 const index = defineModel<number>('index', { required: true });
 
-const emit = defineEmits(['close', 'loadMore'])
+const emit = defineEmits(['close'])
 
 const store = useMainStore();
 
