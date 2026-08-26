@@ -14,8 +14,8 @@
                 </div>
             </li>
         </ul>
-        <div v-else class="cards-wrapper">
-            <ul @scroll="onScroll" class="cards">
+        <div v-else class="cards-wrapper" @scroll="onScroll">
+            <ul class="cards">
                 <GridCard v-for="entry in cardsWithQuantitiesSlice" :card="entry.card" :quantity="entry.quantity"
                     :quantityInCollection="entry.quantityInCollection"
                     @selected="() => showCardCarousel(entry.card.id)">
